@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv='Content-Type' content='text/html;charset=utf-8' />
+  <!--link type='text/css' rel='stylesheet' href='style.css' /-->
+  <script type='text/javascript' src='../d3/d3.js'></script>
+  <script type='text/javascript' src='../d3/d3.layout.js'></script>
+</head>
+
+<body>
+  <div id='body'>
+    <svg>
+    </svg>
+    <!--div id='footer'>
+      d3.layout.btree
+      <div class='hint'>click to expand or collapse</div>
+    </div-->
+    <script>
+      var svg = d3.select("body").append("svg");
+      svg.attr('width', 600);
+
+      svg.append('circle');
+      svg.append('circle');
+      svg.append('circle');
+      svg.append('circle');
+      svg.append('circle');
+      svg.append('circle');
+
+      var circles = d3.selectAll('circle');
+
+      circles.style('fill', 'steelblue');
+      circles.attr('r', '30');
+      circles.attr('cx', function () {
+        return Math.random() * 600
+      });
+      circles.attr('cy', '60');
+    </script>
+  </div>
+
+</body>
+
+</html>
