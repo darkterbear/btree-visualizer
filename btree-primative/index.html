@@ -34,12 +34,14 @@
     </div>
   </div>
   <script type="text/javascript">
+    // m is padding
     var m = [20, 120, 20, 120],
-      w = 1280 - m[1] - m[3],
-      h = 800 - m[0] - m[2],
+      w = 1280 - m[1] - m[3], // side padding
+      h = 800 - m[0] - m[2], // top bottom padding
       i = 0,
       root;
 
+    // inits new d3 tree
     var tree = d3.layout.tree()
       .size([h, w]);
 
@@ -54,8 +56,26 @@
       .append("svg:g")
       .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
 
-    d3.json("flare.json", function (json) {
-      root = json;
+    var convert = function (node) {
+      // spit out a d3 acceptable tree, use newlines for different keys
+      node.name = node.values.reduce((accumulator, current) => {
+        return accumulator + ' ' + current;
+      }, '');
+      //node.name = node.name.substring(1);
+      delete node.values;
+      node.children.sort((c1, c2) => {
+        return (c1.values[0] < c2.values[0]);
+      });
+      node.children.forEach(convert);
+    }
+
+    // read json data
+    d3.json("data-btree.json", function (input) {
+      root = input.root;
+      convert(root);
+      console.log(root);
+
+      // this merely dictates the initial position before the dumb zoom animation
       root.x0 = h / 2;
       root.y0 = 0;
 
@@ -68,10 +88,12 @@
 
       // Initialize the display to show a few nodes.
       root.children.forEach(toggleAll);
+      /*
       toggle(root.children[1]);
       toggle(root.children[1].children[2]);
       toggle(root.children[9]);
       toggle(root.children[9].children[0]);
+      */
 
       update(root);
     });
