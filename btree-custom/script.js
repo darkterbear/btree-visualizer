@@ -44,13 +44,14 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
   });
 
   // iterate through each child
+  var childGroups = [];
   node.children.forEach(function(child, index) {
 
     // create the subgroup for this child
     var subgroup = container.append('svg:g')
-      .attr('x', xPos + (48 * index))
-      .attr('y', yPos + 48)
       .attr('opacity', 1);
+
+    childGroups.push(subgroup);
 
     // draw the child indicator and define click behavior
     var childCircle = container.append('svg:circle')
@@ -70,8 +71,8 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
             .duration(500)
             .attr('fill', 'green');
           
+            child.expanded = true;
           // TODO: transition+translate the other children to "make room" for this entering child
-          child.expanded = true;
         } else {
           subgroup.transition()
             .duration(500)
@@ -84,6 +85,7 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
           // TODO: transition+translate the other children to "spread out" since this child is "gone"
           child.expanded = false;
         }
+        updateChildrenPosition(node, childGroups);
       });
 
     
@@ -110,6 +112,15 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
   });
 
 }
+
+var updateChildrenPosition = function(node, childGroupDOMObjects) {
+  var shownChildrenIndexes = [];
+  node.children.forEach(function (child, index) {
+    if (child.expanded) shownChildrenIndexes.push(index);
+  });
+
+  // TODO: must use d3 transition to move the literal RECTs, TEXTs, and PATHs
+};
 
 d3.json('data-btree.json', function(data) {
   drawNode(data.root, 0, 0, 1, group);
