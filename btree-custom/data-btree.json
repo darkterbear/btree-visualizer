@@ -1,6 +1,7 @@
 {
   "maxKeys": 4,
   "root": {
+    "expanded": true,
     "values": [
       35,
       64,
@@ -8,16 +9,20 @@
     ],
     "children": [
       {
+        "expanded": true,
         "values": [
           17, 20, 24
         ], "children": []
       }, {
+        "expanded": true,
         "values": [41, 48, 57],
         "children": []
       }, {
+        "expanded": false,
         "values": [65, 66, 67],
         "children": []
       }, {
+        "expanded": true,
         "values": [73, 77, 89],
         "children": []
       }

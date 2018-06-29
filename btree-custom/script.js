@@ -66,7 +66,44 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
   });
 
   node.children.forEach(function(child, index) {
-    var subgroup = container.append('svg:g');
+
+    var subgroup = container.append('svg:g')
+      .attr('x', xPos + (48 * index))
+      .attr('y', yPos + 48)
+      .attr('opacity', 1);
+
+    var childCircle = container.append('svg:circle')
+      .attr('cx', xPos + (48 * index))
+      .attr('cy', yPos + 48)
+      .attr('r', 4)
+      .attr('fill', child.expanded ? 'green' : 'white')
+      .attr('stroke-width', 2)
+      .attr('stroke','green')
+      .on('click', function() {
+        if (!child.expanded) {
+          subgroup.transition()
+            .duration(500)
+            .attr('opacity', 1);
+
+          childCircle.transition()
+            .duration(500)
+            .attr('fill', 'green');
+          
+          child.expanded = true;
+        } else {
+          subgroup.transition()
+            .duration(500)
+            .attr('opacity', 0);
+
+          childCircle.transition()
+            .duration(500)
+            .attr('fill', 'white');
+
+          child.expanded = false;
+        }
+      });
+
+    
 
     drawNode(child, depth + 1, index, node.children.length, subgroup);
     // TODO: figure out paths: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
@@ -81,7 +118,10 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
     subgroup.append('svg:path')
       .attr('d', pathString)
       .attr('stroke', 'black')
+      .attr('stroke-width', 2)
       .attr('fill', 'transparent');
+
+    if (!child.expanded) subgroup.attr('opacity', 0);
   });
 
 }
