@@ -28,7 +28,9 @@ var svgContainer = d3.select("body").append("svg:svg")
   .attr("width", wW)
   .attr("height", wH);
 
-var drawNode = function(node, depth, siblingIndex, numSiblings) {
+var group = svgContainer.append('svg:g');
+
+var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
   // every key has a 32 by 32 square
   var numKeys = node.values.length;
 
@@ -37,33 +39,33 @@ var drawNode = function(node, depth, siblingIndex, numSiblings) {
   var nodeWidth = 48 * numKeys;
   var xPos = xPosCenter - nodeWidth / 2;
 
-  var group = svgContainer.append('svg:g')
-    .attr('height', 48)
-    .attr('width', nodeWidth)
-    .attr('transform', 'translate(' + xPos + ', ' + yPos + ')');
+  // group.attr('transform', 'translate(' + xPos + ', ' + yPos + ')');
 
   node.values.forEach(function (value, index, values) {
-    group.append('svg:rect')
+    container.append('svg:rect')
         .attr('height', 48)
         .attr('width', 48)
-        .attr('x', 48 * index)
+        .attr('x', 48 * index + xPos)
+        .attr('y', yPos)
         .attr('fill', 'white')
         .attr('stroke','steelblue')
         .attr('stroke-width', 4);
 
-    group.append('svg:text')
-        .attr('x', 48 * index + 24)
-        .attr('y', 32)
+    container.append('svg:text')
+        .attr('x', 48 * index + 24 + xPos)
+        .attr('y', 32 + yPos)
         .attr('font-family', 'Lato')
         .attr('font-size', 24)
-        .attr('fill', 'blue')
+        .attr('fill', 'black')
         .attr('stroke', 'black')
         .style('text-anchor', 'middle')
         .text(function() {return value});
   });
 
   node.children.forEach(function(child, index) {
-    drawNode(child, depth + 1, index, node.children.length);
+    var subgroup = container.append('svg:g');
+
+    drawNode(child, depth + 1, index, node.children.length, subgroup);
     // TODO: figure out paths: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
     var startString = xPos + (48 * index) + ' ' + (yPos + 48);
     var sControlString = xPos + (48 * index) + ' ' + (yPos + 96);
@@ -73,7 +75,7 @@ var drawNode = function(node, depth, siblingIndex, numSiblings) {
     var eControlString = childCenterX + ' ' + (yPos + 128 - 48);
     var pathString = 'M' + startString + ' C ' + sControlString + ', ' + eControlString + ', ' + endString;
 
-    svgContainer.append('svg:path')
+    subgroup.append('svg:path')
       .attr('d', pathString)
       .attr('stroke', 'black')
       .attr('fill', 'transparent');
@@ -81,4 +83,4 @@ var drawNode = function(node, depth, siblingIndex, numSiblings) {
 
 }
 
-drawNode(sampleBtree.root, 0, 0, 1);
+drawNode(sampleBtree.root, 0, 0, 1, group);
