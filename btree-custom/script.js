@@ -14,10 +14,10 @@ var sampleBtree = {
       ],
       children: []
     }, {
-      values: [9, 12],
+      values: [9, 12, 16],
       children: []
     }, {
-      values: [18, 21],
+      values: [18, 21, 100],
       children: []
     }]
   }
@@ -44,17 +44,29 @@ var drawNode = function(node, depth, siblingIndex, numSiblings) {
 
   node.values.forEach(function (value, index, values) {
     group.append('svg:rect')
-      .attr('height', 32)
-      .attr('width', 32)
-      .attr('x', 32 * index)
-      .attr('fill', 'steelblue');
+        .attr('height', 48)
+        .attr('width', 48)
+        .attr('x', 48 * index)
+        .attr('fill', 'white')
+        .attr('stroke','steelblue')
+        .attr('stroke-width', 4);
 
     group.append('svg:text')
-      .attr('x', 32 * index)
-      .attr('font-family', 'Verdana')
-      .attr('font-size', 24)
-      .attr('fill', 'blue');
+        .attr('x', 48 * index + 24)
+        .attr('y', 32)
+        .attr('font-family', 'Lato')
+        .attr('font-size', 24)
+        .attr('fill', 'blue')
+        .attr('stroke', 'black')
+        .style('text-anchor', 'middle')
+        .text(function() {return value});
   });
+
+  node.children.forEach(function(child, index) {
+    drawNode(child, depth + 1, index, node.children.length);
+    // TODO: figure out paths: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+  });
+
 }
 
 drawNode(sampleBtree.root, 0, 0, 1);
