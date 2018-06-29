@@ -2,6 +2,7 @@ var wW = window.innerWidth;
 var wH = window.innerHeight;
 
 // sample json data
+/*
 var sampleBtree = {
   root: {
     values: [
@@ -22,6 +23,8 @@ var sampleBtree = {
     }]
   }
 }
+*/
+
 
 //Make an SVG Container
 var svgContainer = d3.select("body").append("svg:svg")
@@ -83,4 +86,6 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
 
 }
 
-drawNode(sampleBtree.root, 0, 0, 1, group);
+d3.json('data-btree.json', function(data) {
+  drawNode(data.root, 0, 0, 1, group);
+});

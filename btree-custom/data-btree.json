@@ -2,19 +2,23 @@
   "maxKeys": 4,
   "root": {
     "values": [
-      7,
-      16
+      35,
+      64,
+      70
     ],
     "children": [
       {
         "values": [
-          1, 2, 5, 6
+          17, 20, 24
         ], "children": []
       }, {
-        "values": [9, 12],
+        "values": [41, 48, 57],
         "children": []
       }, {
-        "values": [18, 21],
+        "values": [65, 66, 67],
+        "children": []
+      }, {
+        "values": [73, 77, 89],
         "children": []
       }
     ]
