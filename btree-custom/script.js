@@ -1,30 +1,6 @@
+// get window dimensions
 var wW = window.innerWidth;
 var wH = window.innerHeight;
-
-// sample json data
-/*
-var sampleBtree = {
-  root: {
-    values: [
-      7,
-      16
-    ],
-    children: [{
-      values: [
-        1, 2, 5, 6
-      ],
-      children: []
-    }, {
-      values: [9, 12, 16],
-      children: []
-    }, {
-      values: [18, 21, 100],
-      children: []
-    }]
-  }
-}
-*/
-
 
 //Make an SVG Container
 var svgContainer = d3.select("body").append("svg:svg")
@@ -34,17 +10,18 @@ var svgContainer = d3.select("body").append("svg:svg")
 var group = svgContainer.append('svg:g');
 
 var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
-  // every key has a 32 by 32 square
   var numKeys = node.values.length;
 
+  // calculate the position of this node
   var yPos = 128 * (depth + 1);
   var xPosCenter = (wW / (numSiblings + 1)) * (siblingIndex + 1);
   var nodeWidth = 48 * numKeys;
   var xPos = xPosCenter - nodeWidth / 2;
 
-  // group.attr('transform', 'translate(' + xPos + ', ' + yPos + ')');
-
+  // iterate through each key
   node.values.forEach(function (value, index, values) {
+
+    // each key gets its own square...
     container.append('svg:rect')
         .attr('height', 48)
         .attr('width', 48)
@@ -54,6 +31,7 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
         .attr('stroke','steelblue')
         .attr('stroke-width', 4);
 
+    // and its own text!
     container.append('svg:text')
         .attr('x', 48 * index + 24 + xPos)
         .attr('y', 32 + yPos)
@@ -65,13 +43,16 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
         .text(function() {return value});
   });
 
+  // iterate through each child
   node.children.forEach(function(child, index) {
 
+    // create the subgroup for this child
     var subgroup = container.append('svg:g')
       .attr('x', xPos + (48 * index))
       .attr('y', yPos + 48)
       .attr('opacity', 1);
 
+    // draw the child indicator and define click behavior
     var childCircle = container.append('svg:circle')
       .attr('cx', xPos + (48 * index))
       .attr('cy', yPos + 48)
@@ -89,6 +70,7 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
             .duration(500)
             .attr('fill', 'green');
           
+          // TODO: transition+translate the other children to "make room" for this entering child
           child.expanded = true;
         } else {
           subgroup.transition()
@@ -99,14 +81,16 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
             .duration(500)
             .attr('fill', 'white');
 
+          // TODO: transition+translate the other children to "spread out" since this child is "gone"
           child.expanded = false;
         }
       });
 
     
-
+    // recursively draw the child
     drawNode(child, depth + 1, index, node.children.length, subgroup);
-    // TODO: figure out paths: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+
+    // parameters for the parent-child path
     var startString = xPos + (48 * index) + ' ' + (yPos + 48);
     var sControlString = xPos + (48 * index) + ' ' + (yPos + 96);
 
@@ -115,6 +99,7 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
     var eControlString = childCenterX + ' ' + (yPos + 128 - 48);
     var pathString = 'M' + startString + ' C ' + sControlString + ', ' + eControlString + ', ' + endString;
 
+    // draw the parent-child path
     subgroup.append('svg:path')
       .attr('d', pathString)
       .attr('stroke', 'black')
