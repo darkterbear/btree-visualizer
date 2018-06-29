@@ -34,12 +34,12 @@ var drawNode = function(node, depth, siblingIndex, numSiblings) {
 
   var yPos = 128 * (depth + 1);
   var xPosCenter = (wW / (numSiblings + 1)) * (siblingIndex + 1);
-  var nodeWidth = 32 * numKeys;
+  var nodeWidth = 48 * numKeys;
   var xPos = xPosCenter - nodeWidth / 2;
 
   var group = svgContainer.append('svg:g')
-    .attr('height', 32)
-    .attr('width', 32 * nodeWidth)
+    .attr('height', 48)
+    .attr('width', nodeWidth)
     .attr('transform', 'translate(' + xPos + ', ' + yPos + ')');
 
   node.values.forEach(function (value, index, values) {
@@ -65,6 +65,18 @@ var drawNode = function(node, depth, siblingIndex, numSiblings) {
   node.children.forEach(function(child, index) {
     drawNode(child, depth + 1, index, node.children.length);
     // TODO: figure out paths: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+    var startString = xPos + (48 * index) + ' ' + (yPos + 48);
+    var sControlString = xPos + (48 * index) + ' ' + (yPos + 96);
+
+    var childCenterX = wW / (node.children.length + 1) * (index + 1);
+    var endString = childCenterX + ' ' + (yPos + 128);
+    var eControlString = childCenterX + ' ' + (yPos + 128 - 48);
+    var pathString = 'M' + startString + ' C ' + sControlString + ', ' + eControlString + ', ' + endString;
+
+    svgContainer.append('svg:path')
+      .attr('d', pathString)
+      .attr('stroke', 'black')
+      .attr('fill', 'transparent');
   });
 
 }
