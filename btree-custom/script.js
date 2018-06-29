@@ -18,11 +18,14 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
   var nodeWidth = 48 * numKeys;
   var xPos = xPosCenter - nodeWidth / 2;
 
+  // create a parameter to hold the dom objects
+  node.keyObjects = []
+
   // iterate through each key
   node.values.forEach(function (value, index, values) {
 
     // each key gets its own square...
-    container.append('svg:rect')
+    var rect = container.append('svg:rect')
         .attr('height', 48)
         .attr('width', 48)
         .attr('x', 48 * index + xPos)
@@ -32,7 +35,7 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
         .attr('stroke-width', 4);
 
     // and its own text!
-    container.append('svg:text')
+    var text = container.append('svg:text')
         .attr('x', 48 * index + 24 + xPos)
         .attr('y', 32 + yPos)
         .attr('font-family', 'Lato')
@@ -41,17 +44,16 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
         .attr('stroke', 'black')
         .style('text-anchor', 'middle')
         .text(function() {return value});
+
+    node.keyObjects.push({ rect: rect, text: text });
   });
 
   // iterate through each child
-  var childGroups = [];
   node.children.forEach(function(child, index) {
 
     // create the subgroup for this child
     var subgroup = container.append('svg:g')
       .attr('opacity', 1);
-
-    childGroups.push(subgroup);
 
     // draw the child indicator and define click behavior
     var childCircle = container.append('svg:circle')
@@ -85,7 +87,7 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
           // TODO: transition+translate the other children to "spread out" since this child is "gone"
           child.expanded = false;
         }
-        updateChildrenPosition(node, childGroups);
+        updateChildrenPosition(node);
       });
 
     
@@ -113,13 +115,19 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
 
 }
 
-var updateChildrenPosition = function(node, childGroupDOMObjects) {
-  var shownChildrenIndexes = [];
-  node.children.forEach(function (child, index) {
-    if (child.expanded) shownChildrenIndexes.push(index);
-  });
+var updateChildrenPosition = function(node) {
+  var numberOfShown = node.children.filter(c => c.expanded).length;
 
-  // TODO: must use d3 transition to move the literal RECTs, TEXTs, and PATHs
+  var indexCounter = 0;
+  node.children.forEach(function (child, index) {
+    if (child.expanded) {
+      var xPos = (wW / (numberOfShown + 1)) * (indexCounter + 1);
+      
+      // TODO: must use d3 transition to move the literal RECTs, TEXTs, and PATHs
+      
+      indexCounter++;
+    }
+  });
 };
 
 d3.json('data-btree.json', function(data) {
