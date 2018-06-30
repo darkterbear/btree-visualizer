@@ -47,8 +47,9 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
     var subgroup = container.append('svg:svg')
       .attr('x', index * parseInt(container.style('width')) / node.children.length)
       .attr('y', 128)
-      .attr('width', parseInt(container.style('width')) / node.children.length)
-      .attr('height', parseInt(container.style('height')) - 128)
+      .style('width', parseInt(container.style('width')) / node.children.length + 'px')
+      .style('height', parseInt(container.style('height')) - 128 + 'px')
+      .attr("viewbox", index * parseInt(container.style('width')) / node.children.length + ' 128 ' + parseInt(container.style('width')) / node.children.length + ' ' + (parseInt(container.style('height')) - 128))
       .attr('opacity', 1);
 
     console.log(subgroup.style('width'));
@@ -93,8 +94,9 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
     drawNode(child, depth + 1, index, node.children.length, subgroup);
 
     // parameters for the parent-child path
-    var startString = xPos + (48 * index) + ' ' + (yPos + keyDimension);
-    var sControlString = xPos + (48 * index) + ' ' + (yPos + 96);
+    /*
+    var startString = parseInt(container.style('width')) / 2 + ' ' + (yPos);
+    var sControlString = 88 + ' ' + (yPos - 96);
 
     var childCenterX = parseInt(container.style('width')) / (node.children.length + 1) * (index + 1);
     var endString = childCenterX + ' ' + (yPos + 128);
@@ -107,7 +109,9 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
       .attr('stroke', 'black')
       .attr('stroke-width', 2)
       .attr('fill', 'transparent');
+    */
 
+    
     if (!child.expanded) subgroup.attr('opacity', 0);
   });
 
@@ -130,8 +134,9 @@ var updateChildrenPosition = function(node) {
 
 //Make an SVG Container
 var svgContainer = d3.select("body").append("svg:svg")
-  .attr("width", wW)
-  .attr("height", wH);
+  .attr('width', wW)
+  .attr('height', wH)
+  .attr("viewbox", '0 0 ' + wW + ' ' + wH);
 
 d3.json('data-btree.json', function(data) {
   drawNode(data.root, 0, 0, 1, svgContainer);
