@@ -2,33 +2,27 @@
 var wW = window.innerWidth;
 var wH = window.innerHeight;
 
-//Make an SVG Container
-var svgContainer = d3.select("body").append("svg:svg")
-  .attr("width", wW)
-  .attr("height", wH);
-
-var group = svgContainer.append('svg:g');
+// set display size of a single key
+const keyDimension = 48; 
 
 var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
   var numKeys = node.values.length;
 
-  // calculate the position of this node
-  var yPos = 128 * (depth + 1);
-  var xPosCenter = (wW / (numSiblings + 1)) * (siblingIndex + 1);
-  var nodeWidth = 48 * numKeys;
+  // calculate the position of this node RELATIVE TO THE CONTAINER
+  // (xPos, yPos) represents the upper left corner of the node
+  var yPos = 128;
+  var xPosCenter = parseInt(container.style('width')) / 2;
+  var nodeWidth = keyDimension * numKeys;
   var xPos = xPosCenter - nodeWidth / 2;
-
-  // create a parameter to hold the dom objects
-  node.keyObjects = []
 
   // iterate through each key
   node.values.forEach(function (value, index, values) {
 
     // each key gets its own square...
     var rect = container.append('svg:rect')
-        .attr('height', 48)
-        .attr('width', 48)
-        .attr('x', 48 * index + xPos)
+        .attr('height', keyDimension)
+        .attr('width', keyDimension)
+        .attr('x', keyDimension * index + xPos)
         .attr('y', yPos)
         .attr('fill', 'white')
         .attr('stroke','steelblue')
@@ -36,7 +30,7 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
 
     // and its own text!
     var text = container.append('svg:text')
-        .attr('x', 48 * index + 24 + xPos)
+        .attr('x', keyDimension * index + 24 + xPos)
         .attr('y', 32 + yPos)
         .attr('font-family', 'Lato')
         .attr('font-size', 24)
@@ -44,16 +38,20 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
         .attr('stroke', 'black')
         .style('text-anchor', 'middle')
         .text(function() {return value});
-
-    node.keyObjects.push({ rect: rect, text: text });
   });
 
   // iterate through each child
   node.children.forEach(function(child, index) {
 
     // create the subgroup for this child
-    var subgroup = container.append('svg:g')
+    var subgroup = container.append('svg:svg')
+      .attr('x', index * parseInt(container.style('width')) / node.children.length)
+      .attr('y', 128)
+      .attr('width', parseInt(container.style('width')) / node.children.length)
+      .attr('height', parseInt(container.style('height')) - 128)
       .attr('opacity', 1);
+
+    console.log(subgroup.style('width'));
 
     // draw the child indicator and define click behavior
     var childCircle = container.append('svg:circle')
@@ -95,12 +93,12 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
     drawNode(child, depth + 1, index, node.children.length, subgroup);
 
     // parameters for the parent-child path
-    var startString = xPos + (48 * index) + ' ' + (yPos + 48);
+    var startString = xPos + (48 * index) + ' ' + (yPos + keyDimension);
     var sControlString = xPos + (48 * index) + ' ' + (yPos + 96);
 
-    var childCenterX = wW / (node.children.length + 1) * (index + 1);
+    var childCenterX = parseInt(container.style('width')) / (node.children.length + 1) * (index + 1);
     var endString = childCenterX + ' ' + (yPos + 128);
-    var eControlString = childCenterX + ' ' + (yPos + 128 - 48);
+    var eControlString = childCenterX + ' ' + (yPos + 128 - keyDimension);
     var pathString = 'M' + startString + ' C ' + sControlString + ', ' + eControlString + ', ' + endString;
 
     // draw the parent-child path
@@ -123,13 +121,18 @@ var updateChildrenPosition = function(node) {
     if (child.expanded) {
       var xPos = (wW / (numberOfShown + 1)) * (indexCounter + 1);
       
-      // TODO: must use d3 transition to move the literal RECTs, TEXTs, and PATHs
+      // TODO: must use d3 transition to move the literal RECTs, TEXTs, and PATHs, and possible CHILDREN
       
       indexCounter++;
     }
   });
 };
 
+//Make an SVG Container
+var svgContainer = d3.select("body").append("svg:svg")
+  .attr("width", wW)
+  .attr("height", wH);
+
 d3.json('data-btree.json', function(data) {
-  drawNode(data.root, 0, 0, 1, group);
+  drawNode(data.root, 0, 0, 1, svgContainer);
 });
