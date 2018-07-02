@@ -6,77 +6,74 @@
       35,
       70
     ],
-    "children": [
-      {
+    "children": [{
+      "expanded": true,
+      "values": [
+        17, 20
+      ],
+      "children": [{
         "expanded": true,
         "values": [
-          17, 20
-        ], "children": [
-          {
-            "expanded": true,
-            "values": [
-              15
-            ],
-            "children": []
-          }, {
-            "expanded": true,
-            "values": [
-              19
-            ],
-            "children": []
-          }, {
-            "expanded": true,
-            "values": [
-              25
-            ],
-            "children": []
-          }
-        ]
+          15
+        ],
+        "children": []
       }, {
         "expanded": true,
-        "values": [41, 57],
-        "children": [{
-          "expanded": true,
-          "values": [
-            40
-          ],
-          "children": []
-        }, {
-          "expanded": true,
-          "values": [
-            42
-          ],
-          "children": []
-        }, {
-          "expanded": true,
-          "values": [
-            58
-          ],
-          "children": []
-        }]
+        "values": [
+          19
+        ],
+        "children": []
       }, {
         "expanded": true,
-        "values": [73, 89],
-        "children": [{
-          "expanded": true,
-          "values": [
-            72
-          ],
-          "children": []
-        }, {
-          "expanded": true,
-          "values": [
-            88
-          ],
-          "children": []
-        }, {
-          "expanded": true,
-          "values": [
-            91
-          ],
-          "children": []
-        }]
-      }
-    ]
+        "values": [
+          25
+        ],
+        "children": []
+      }]
+    }, {
+      "expanded": true,
+      "values": [41, 57],
+      "children": [{
+        "expanded": true,
+        "values": [
+          40
+        ],
+        "children": []
+      }, {
+        "expanded": true,
+        "values": [
+          42
+        ],
+        "children": []
+      }, {
+        "expanded": true,
+        "values": [
+          58
+        ],
+        "children": []
+      }]
+    }, {
+      "expanded": true,
+      "values": [73, 89],
+      "children": [{
+        "expanded": true,
+        "values": [
+          72
+        ],
+        "children": []
+      }, {
+        "expanded": true,
+        "values": [
+          88
+        ],
+        "children": []
+      }, {
+        "expanded": true,
+        "values": [
+          91
+        ],
+        "children": []
+      }]
+    }]
   }
 }
