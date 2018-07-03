@@ -32,7 +32,7 @@ var drawNode = function(node, depth, siblingIndex, numSiblings, container) {
     var text = container.append('svg:text')
         .attr('x', keyDimension * index + 24 + xPos)
         .attr('y', 32 + yPos)
-        .attr('font-family', 'Lato')
+        .attr('font-family', 'Sofia Pro')
         .attr('font-size', 24)
         .attr('fill', 'black')
         .attr('stroke', 'black')

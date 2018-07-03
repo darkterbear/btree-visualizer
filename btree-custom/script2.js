@@ -153,7 +153,7 @@ var draw = (matrix) => {
           .attr('id', node.code + '--text:' + keyIndex)
           .attr('x', keySize * (keyIndex + 0.5) + x)
           .attr('y', y + keySize / 1.5)
-          .attr('font-family', 'Lato')
+          .attr('font-family', 'Sofia Pro')
           .attr('font-size', 24)
           .attr('fill', 'black')
           .attr('stroke', 'black')
