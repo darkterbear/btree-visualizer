@@ -5,6 +5,23 @@ var wH = window.innerHeight;
 // length, in user units, of the key display dimensions
 var keySize = 48;
 
+var insertValue = (value) => {
+  console.log(value);
+}
+
+window.onload = () => {
+  /**
+   * Just Make sure to return false so that your request will not go the server script
+   */
+  document.querySelector("#modifyForm").addEventListener("submit", 
+function(e){
+
+  //some code
+  document.getElementById('insert').value = ''
+  e.preventDefault();
+})
+}
+
 // root svg canvas
 var svg = d3.select('body').append('svg:svg')
   .attr('width', wW)
@@ -284,7 +301,7 @@ var redraw = (matrix, depth) => {
 /**
  * Reads the json data from file input
  */
-d3.json('data-btree-large.json', (data) => {
+d3.json('data-btree-3.json', (data) => {
   // inject parent data
   injectParent(data.root);
 

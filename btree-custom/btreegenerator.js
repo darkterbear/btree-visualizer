@@ -1,7 +1,7 @@
 var object = {};
 var x = 1;
 var inject = (node, level) => {
-  if (level >= 4) return;
+  if (level >= 3) return;
   if (level == 0) node.expanded = true;
   else node.expanded = false;
   node.values = [];
