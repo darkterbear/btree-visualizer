@@ -3,30 +3,64 @@
   "root": {
     "expanded": true,
     "values": [
-      35,
+      48,
       70
     ],
     "children": [{
       "expanded": true,
       "values": [
-        17, 20
+        16, 32
       ],
       "children": [{
         "expanded": true,
         "values": [
-          15
+          4, 8, 12
+        ],
+        "children": [{
+            "expanded": true,
+            "values": [
+              1,
+              2,
+              3
+            ],
+            "children": []
+          }, {
+            "expanded": true,
+            "values": [
+              5,
+              6,
+              7
+            ],
+            "children": []
+          }, {
+            "expanded": true,
+            "values": [
+              9,
+              10,
+              11
+            ],
+            "children": []
+          }, {
+            "expanded": true,
+            "values": [
+              13,
+              14,
+              15
+            ],
+            "children": []
+          }]
+      }, {
+        "expanded": true,
+        "values": [
+          20, 24, 28
         ],
         "children": []
       }, {
         "expanded": true,
         "values": [
-          19
-        ],
-        "children": []
-      }, {
-        "expanded": true,
-        "values": [
-          25
+          36,
+          40,
+          44
         ],
         "children": []
       }]

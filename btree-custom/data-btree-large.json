@@ -1,0 +1,344 @@
+{
+  "maxKeys": 4,
+  "root": {
+    "expanded": true,
+    "values": [64, 128, 192],
+    "children": [{
+      "expanded": true,
+      "values": [16, 32, 48],
+      "children": [{
+        "expanded": true,
+        "values": [4, 8, 12],
+        "children": [{
+          "expanded": true,
+          "values": [1, 2, 3],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [5, 6, 7],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [9, 10, 11],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [13, 14, 15],
+          "children": []
+        }]
+      }, {
+        "expanded": true,
+        "values": [20, 24, 28],
+        "children": [{
+          "expanded": true,
+          "values": [17, 18, 19],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [21, 22, 23],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [25, 26, 27],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [29, 30, 31],
+          "children": []
+        }]
+      }, {
+        "expanded": true,
+        "values": [36, 40, 44],
+        "children": [{
+          "expanded": true,
+          "values": [33, 34, 35],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [37, 38, 39],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [41, 42, 43],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [45, 46, 47],
+          "children": []
+        }]
+      }, {
+        "expanded": true,
+        "values": [52, 56, 60],
+        "children": [{
+          "expanded": true,
+          "values": [49, 50, 51],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [53, 54, 55],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [57, 58, 59],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [61, 62, 63],
+          "children": []
+        }]
+      }]
+    }, {
+      "expanded": true,
+      "values": [80, 96, 112],
+      "children": [{
+        "expanded": true,
+        "values": [68, 72, 76],
+        "children": [{
+          "expanded": true,
+          "values": [65, 66, 67],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [69, 70, 71],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [73, 74, 75],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [77, 78, 79],
+          "children": []
+        }]
+      }, {
+        "expanded": true,
+        "values": [84, 88, 92],
+        "children": [{
+          "expanded": true,
+          "values": [81, 82, 83],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [85, 86, 87],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [89, 90, 91],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [93, 94, 95],
+          "children": []
+        }]
+      }, {
+        "expanded": true,
+        "values": [100, 104, 108],
+        "children": [{
+          "expanded": true,
+          "values": [97, 98, 99],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [101, 102, 103],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [105, 106, 107],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [109, 110, 111],
+          "children": []
+        }]
+      }, {
+        "expanded": true,
+        "values": [116, 120, 124],
+        "children": [{
+          "expanded": true,
+          "values": [113, 114, 115],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [117, 118, 119],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [121, 122, 123],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [125, 126, 127],
+          "children": []
+        }]
+      }]
+    }, {
+      "expanded": true,
+      "values": [144, 160, 176],
+      "children": [{
+        "expanded": true,
+        "values": [132, 136, 140],
+        "children": [{
+          "expanded": true,
+          "values": [129, 130, 131],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [133, 134, 135],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [137, 138, 139],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [141, 142, 143],
+          "children": []
+        }]
+      }, {
+        "expanded": true,
+        "values": [148, 152, 156],
+        "children": [{
+          "expanded": true,
+          "values": [145, 146, 147],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [149, 150, 151],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [153, 154, 155],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [157, 158, 159],
+          "children": []
+        }]
+      }, {
+        "expanded": true,
+        "values": [164, 168, 172],
+        "children": [{
+          "expanded": true,
+          "values": [161, 162, 163],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [165, 166, 167],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [169, 170, 171],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [173, 174, 175],
+          "children": []
+        }]
+      }, {
+        "expanded": true,
+        "values": [180, 184, 188],
+        "children": [{
+          "expanded": true,
+          "values": [177, 178, 179],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [181, 182, 183],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [185, 186, 187],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [189, 190, 191],
+          "children": []
+        }]
+      }]
+    }, {
+      "expanded": true,
+      "values": [208, 224, 240],
+      "children": [{
+        "expanded": true,
+        "values": [196, 200, 204],
+        "children": [{
+          "expanded": true,
+          "values": [193, 194, 195],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [197, 198, 199],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [201, 202, 203],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [205, 206, 207],
+          "children": []
+        }]
+      }, {
+        "expanded": true,
+        "values": [212, 216, 220],
+        "children": [{
+          "expanded": true,
+          "values": [209, 210, 211],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [213, 214, 215],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [217, 218, 219],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [221, 222, 223],
+          "children": []
+        }]
+      }, {
+        "expanded": true,
+        "values": [228, 232, 236],
+        "children": [{
+          "expanded": true,
+          "values": [225, 226, 227],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [229, 230, 231],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [233, 234, 235],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [237, 238, 239],
+          "children": []
+        }]
+      }, {
+        "expanded": true,
+        "values": [244, 248, 252],
+        "children": [{
+          "expanded": true,
+          "values": [241, 242, 243],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [245, 246, 247],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [249, 250, 251],
+          "children": []
+        }, {
+          "expanded": true,
+          "values": [253, 254, 255],
+          "children": []
+        }]
+      }]
+    }]
+  }
+}

@@ -285,7 +285,7 @@ var redraw = (matrix, depth) => {
 /**
  * Reads the json data from file input
  */
-d3.json('data-btree.json', (data) => {
+d3.json('data-btree-large.json', (data) => {
   // inject parent data
   injectParent(data.root);
 
