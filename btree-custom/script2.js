@@ -10,6 +10,19 @@ var svg = d3.select('body').append('svg:svg')
   .attr('width', wW)
   .attr('height', wH);
 
+var accumulator = (a, b) => a + b;
+
+var injectParent = (node) => {
+  // also add a code for every node for group identification
+  var nodeCode = '-' + node.values.reduce(accumulator);
+  node.children.forEach((child) => {
+    nodeCode += '-' + child.values.reduce(accumulator);
+    child.parent = node;
+    injectParent(child);
+  });
+  node.code = nodeCode.substring(1);
+}
+
 /**
  * Converts a tree structure to a matrix for easier handling
  * Uses BFS to traverse
@@ -54,18 +67,7 @@ var draw = (matrix) => {
       var nodeWidth = node.values.length * keySize;
       var x = xCenter - nodeWidth / 2;
 
-      node.children.forEach((child, childIndex, children) => {
-        svg.append('svg:circle')
-          .attr('cx', x + (keySize * childIndex))
-          .attr('cy', y + keySize)
-          .attr('r', keySize / 8)
-          .attr('fill', child.expanded ? 'steelblue' : 'white')
-          .attr('stroke', 'green')
-          .on('click', () =>{
-
-          });
-      });
-
+      // draw the node itself
       node.values.forEach((key, keyIndex, keys) => {
         svg.append('svg:rect')
           .attr('height', keySize)
@@ -88,6 +90,19 @@ var draw = (matrix) => {
             return key
           });
       });
+
+      // draw the node's children
+      node.children.forEach((child, childIndex, children) => {
+        svg.append('svg:circle')
+          .attr('cx', x + (keySize * childIndex))
+          .attr('cy', y + keySize)
+          .attr('r', keySize / 8)
+          .attr('fill', child.expanded ? 'steelblue' : 'white')
+          .attr('stroke', 'green')
+          .on('click', () =>{
+
+          });
+      });
     });
   });
 }
@@ -96,6 +111,9 @@ var draw = (matrix) => {
  * Reads the json data from file input
  */
 d3.json('data-btree.json', function(data) {
+  // inject parent data
+  injectParent(data.root);
+
   // convert json data to matrix
   var matrix = convertToMatrix(data.root);
 
