@@ -1,9 +1,3 @@
-d3.selection.prototype.getTransition = function () {
-  if (this[0][0].__transition__) {
-    return this[0][0].__transition__[1];
-  } else return undefined;
-}
-
 // get window dimensions
 var wW = window.innerWidth;
 var wH = window.innerHeight;
@@ -92,25 +86,29 @@ var getChildIndex = (node) => {
  */
 var draw = (matrix) => {
   matrix.forEach((row, depth, matrix) => {
+    
     var y = (depth + 1) * 128;
 
     var numRendered = row.filter(n => shouldBeRendered(n)).length;
     var renderIndex = 0;
     row.forEach((node, index, row) => {
       // check if node should be rendered
-      if (!shouldBeRendered(node)) return;
+      var isNodeRendered = shouldBeRendered(node);
 
+      // calculate node position
       var xCenter = wW / (numRendered + 1) * (renderIndex + 1);
       var nodeWidth = node.values.length * keySize;
       var x = xCenter - nodeWidth / 2;
 
-      renderIndex++;
+      if (isNodeRendered) renderIndex++;
 
       var attachDOM = svg;
       if (node.parent != null) {
         attachDOM = node.parent.group.append('svg:g')
           .attr('id', node.code);
       }
+
+      if (!isNodeRendered) attachDOM.style('opacity', 0);
 
       // draw the line to the parent
       if (node.parent) {
@@ -121,12 +119,13 @@ var draw = (matrix) => {
         var y2 = keySize + parseInt(d3.select('[id="' + node.parent.code + '--rect:' + 0 + '"]').attr('y'));
 
         var pathString = 'M' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + (y1 - keySize * 1.5) + ', ' + x2 + ' ' + (y2 + keySize * 1.5) + ', ' + x2 + ' ' + y2;
-        attachDOM.append('svg:path')
+        var path = attachDOM.append('svg:path')
           .attr('id', node.code + '--path')
           .attr('fill', 'transparent')
           .attr('stroke', 'steelblue')
           .attr('stroke-width', 2)
           .attr('d', pathString);
+        
         /*
         attachDOM.append('svg:line')
           .attr('id', node.code + '--line')
