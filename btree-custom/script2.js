@@ -62,6 +62,16 @@ var convertToMatrix = (data) => {
   return matrix;
 }
 
+var getNodesIn = (row) => {
+  return row.filter(n => n.expanded).length;
+}
+
+var shouldBeRendered = (node) => {
+  if (!node.expanded) return false;
+  if (node.parent == null) return true;
+  return shouldBeRendered(node.parent);
+}
+
 /**
  * Draws the matrix onto the svg canvas
  * @param {*} matrix 
@@ -69,10 +79,18 @@ var convertToMatrix = (data) => {
 var draw = (matrix) => {
   matrix.forEach((row, depth, matrix) => {
     var y = (depth + 1) * 128;
+
+    var numRendered = row.filter(n => shouldBeRendered(n)).length;
+    var renderIndex = 0;
     row.forEach((node, index, row) => {
-      var xCenter = wW / (row.length + 1) * (index + 1);
+      // check if node should be rendered
+      if (!shouldBeRendered(node)) return;
+
+      var xCenter = wW / (numRendered + 1) * (renderIndex + 1);
       var nodeWidth = node.values.length * keySize;
       var x = xCenter - nodeWidth / 2;
+
+      renderIndex++;
 
       var attachDOM = svg;
       if (node.parent != null) {
@@ -136,12 +154,17 @@ var draw = (matrix) => {
                 .duration(300);
             }
             
+            redraw(matrix, depth);
           });
       });
 
       node.group = attachDOM;
     });
   });
+}
+
+var redraw = (matrix, depth) => {
+  //matrix.forEach
 }
 
 /**
