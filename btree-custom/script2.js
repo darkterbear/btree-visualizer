@@ -101,6 +101,7 @@ var draw = (matrix) => {
       // draw the node itself
       node.values.forEach((key, keyIndex, keys) => {
         attachDOM.append('svg:rect')
+          .attr('id', node.code + '--rect:' + keyIndex)
           .attr('height', keySize)
           .attr('width', keySize)
           .attr('x', keySize * keyIndex + x)
@@ -110,6 +111,7 @@ var draw = (matrix) => {
           .attr('stroke-width', 4);
 
         attachDOM.append('svg:text')
+        .attr('id', node.code + '--text:' + keyIndex)
         .attr('x', keySize * (keyIndex + 0.5) + x)
         .attr('y', y + keySize / 1.5)
         .attr('font-family', 'Lato')
@@ -125,6 +127,7 @@ var draw = (matrix) => {
       // draw the node's children
       node.children.forEach((child, childIndex, children) => {
         var circle = attachDOM.append('svg:circle')
+          .attr('id', node.code + '--circle:' + childIndex)
           .attr('cx', x + (keySize * childIndex))
           .attr('cy', y + keySize)
           .attr('r', keySize / 8)
@@ -164,7 +167,54 @@ var draw = (matrix) => {
 }
 
 var redraw = (matrix, depth) => {
-  //matrix.forEach
+  matrix.forEach((row, depth, matrix) => {
+    var y = (depth + 1) * 128;
+
+    var numRendered = row.filter(n => shouldBeRendered(n)).length;
+    var renderIndex = 0;
+    row.forEach((node, index, row) => {
+      // check if node should be rendered
+      if (!shouldBeRendered(node)) return;
+
+      var xCenter = wW / (numRendered + 1) * (renderIndex + 1);
+      var nodeWidth = node.values.length * keySize;
+      var x = xCenter - nodeWidth / 2;
+
+      renderIndex++;
+
+      var attachDOM = svg;
+      if (node.parent != null) {
+        attachDOM = node.parent.group.append('svg:g')
+          .attr('id', node.code);
+      }
+
+      // redraw the node
+      var nodeCode = getNodeCode(node);
+      node.values.forEach((key, keyIndex, keys) => {
+        d3.select('[id="' + nodeCode + '--rect:' + keyIndex + '"]')
+          .transition()
+            .attr('x', keySize * keyIndex + x)
+            .duration(300);
+
+        d3.select('[id="' + nodeCode + '--text:' + keyIndex + '"]')
+          .transition()
+            .attr('x', keySize * (keyIndex + 0.5) + x)
+            .duration(300);
+
+      });
+
+      
+      // redraw the node's children circles
+      node.children.forEach((child, childIndex, children) => {
+        d3.select('[id="' + nodeCode + '--circle:' + childIndex + '"]')
+          .transition()
+            .attr('cx', x + (keySize * childIndex))
+            .style('fill', child.expanded ? 'steelblue' : 'white')
+            .duration(300);
+      });
+
+    });
+  });
 }
 
 /**
