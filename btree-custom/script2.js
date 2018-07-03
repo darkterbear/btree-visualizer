@@ -1,3 +1,9 @@
+d3.selection.prototype.getTransition = function () {
+  if (this[0][0].__transition__) {
+    return this[0][0].__transition__[1];
+  } else return undefined;
+}
+
 // get window dimensions
 var wW = window.innerWidth;
 var wH = window.innerHeight;
@@ -72,6 +78,14 @@ var shouldBeRendered = (node) => {
   return shouldBeRendered(node.parent);
 }
 
+var getChildIndex = (node) => {
+  var parent = node.parent;
+
+  for (var i = 0; i < parent.children.length; i++) {
+    if (parent.children[i].code == node.code) return i;
+  }
+}
+
 /**
  * Draws the matrix onto the svg canvas
  * @param {*} matrix 
@@ -98,6 +112,32 @@ var draw = (matrix) => {
           .attr('id', node.code);
       }
 
+      // draw the line to the parent
+      if (node.parent) {
+        var x1 = xCenter;
+        var y1 = y;
+
+        var x2 = d3.select('[id="' + node.parent.code + '--circle:' + getChildIndex(node) + '"]').attr('cx');
+        var y2 = keySize + parseInt(d3.select('[id="' + node.parent.code + '--rect:' + 0 + '"]').attr('y'));
+
+        var pathString = 'M' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + (y1 - keySize * 1.5) + ', ' + x2 + ' ' + (y2 + keySize * 1.5) + ', ' + x2 + ' ' + y2;
+        attachDOM.append('svg:path')
+          .attr('id', node.code + '--path')
+          .attr('fill', 'transparent')
+          .attr('stroke', 'steelblue')
+          .attr('stroke-width', 2)
+          .attr('d', pathString);
+        /*
+        attachDOM.append('svg:line')
+          .attr('id', node.code + '--line')
+          .attr('x1', x1)
+          .attr('y1', y1)
+          .attr('x2', x2)
+          .attr('y2', y2)
+          .style('stroke', 'steelblue')
+          .style('stroke-width', 2);*/
+      }
+
       // draw the node itself
       node.values.forEach((key, keyIndex, keys) => {
         attachDOM.append('svg:rect')
@@ -111,17 +151,17 @@ var draw = (matrix) => {
           .attr('stroke-width', 4);
 
         attachDOM.append('svg:text')
-        .attr('id', node.code + '--text:' + keyIndex)
-        .attr('x', keySize * (keyIndex + 0.5) + x)
-        .attr('y', y + keySize / 1.5)
-        .attr('font-family', 'Lato')
-        .attr('font-size', 24)
-        .attr('fill', 'black')
-        .attr('stroke', 'black')
-        .style('text-anchor', 'middle')
-        .text(() => {
-          return key
-        });
+          .attr('id', node.code + '--text:' + keyIndex)
+          .attr('x', keySize * (keyIndex + 0.5) + x)
+          .attr('y', y + keySize / 1.5)
+          .attr('font-family', 'Lato')
+          .attr('font-size', 24)
+          .attr('fill', 'black')
+          .attr('stroke', 'black')
+          .style('text-anchor', 'middle')
+          .text(() => {
+            return key
+          });
       });
 
       // draw the node's children
@@ -138,7 +178,7 @@ var draw = (matrix) => {
             if (child.expanded) {
               child.expanded = false;
               d3.select('[id="' + getNodeCode(child) + '"]')
-              .transition()
+                .transition()
                 .style('opacity', 0)
                 .duration(300);
 
@@ -148,7 +188,7 @@ var draw = (matrix) => {
             } else {
               child.expanded = true;
               d3.select('[id="' + getNodeCode(child) + '"]')
-              .transition()
+                .transition()
                 .style('opacity', 1)
                 .duration(300);
 
@@ -156,7 +196,7 @@ var draw = (matrix) => {
                 .style('fill', 'steelblue')
                 .duration(300);
             }
-            
+
             redraw(matrix, depth);
           });
       });
@@ -193,26 +233,51 @@ var redraw = (matrix, depth) => {
       node.values.forEach((key, keyIndex, keys) => {
         d3.select('[id="' + nodeCode + '--rect:' + keyIndex + '"]')
           .transition()
-            .attr('x', keySize * keyIndex + x)
-            .duration(300);
+          .attr('x', keySize * keyIndex + x)
+          .duration(300);
 
         d3.select('[id="' + nodeCode + '--text:' + keyIndex + '"]')
           .transition()
-            .attr('x', keySize * (keyIndex + 0.5) + x)
-            .duration(300);
+          .attr('x', keySize * (keyIndex + 0.5) + x)
+          .duration(300);
 
       });
 
-      
+
       // redraw the node's children circles
       node.children.forEach((child, childIndex, children) => {
         d3.select('[id="' + nodeCode + '--circle:' + childIndex + '"]')
           .transition()
-            .attr('cx', x + (keySize * childIndex))
-            .style('fill', child.expanded ? 'steelblue' : 'white')
-            .duration(300);
+          .attr('cx', x + (keySize * childIndex))
+          .style('fill', child.expanded ? 'steelblue' : 'white')
+          .duration(300);
+
+        child.circleX = x + (keySize * childIndex);
       });
 
+      // draw the line to the parent
+      if (node.parent) {
+        var x1 = xCenter;
+        var y1 = y;
+
+        var x2 = node.circleX; // d3.select('[id="' + node.parent.code + '--circle:' + getChildIndex(node) + '"]').attr('cx');
+        var y2 = keySize + parseInt(d3.select('[id="' + node.parent.code + '--rect:' + 0 + '"]').attr('y'));
+
+        var pathString = 'M' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + (y1 - keySize * 1.5) + ', ' + x2 + ' ' + (y2 + keySize * 1.5) + ', ' + x2 + ' ' + y2;
+        d3.select('[id="' + node.code + '--path"]')
+          .transition()
+            .attr('d', pathString)
+            .duration(300);
+
+          /*
+        d3.select('[id="' + node.code + '--line"]')
+          .transition()
+          .attr('x1', x1)
+          .attr('y1', y1)
+          .attr('x2', x2)
+          .attr('y2', y2)
+          .duration(300);*/
+      }
     });
   });
 }
