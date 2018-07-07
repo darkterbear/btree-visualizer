@@ -5,21 +5,17 @@ var wH = window.innerHeight;
 // length, in user units, of the key display dimensions
 var keySize = 48;
 
-var insertValue = (value) => {
-  console.log(value);
-}
-
 window.onload = () => {
   /**
    * Just Make sure to return false so that your request will not go the server script
    */
-  document.querySelector("#modifyForm").addEventListener("submit", 
-function(e){
+  document.querySelector("#modifyForm").addEventListener("submit",
+    function (e) {
 
-  //some code
-  document.getElementById('insert').value = ''
-  e.preventDefault();
-})
+      //some code
+      document.getElementById('insert').value = ''
+      e.preventDefault();
+    })
 }
 
 // root svg canvas
@@ -103,7 +99,7 @@ var getChildIndex = (node) => {
  */
 var draw = (matrix) => {
   matrix.forEach((row, depth, matrix) => {
-    
+
     var y = (depth + 1) * 128;
 
     var numRendered = row.filter(n => shouldBeRendered(n)).length;
@@ -142,7 +138,7 @@ var draw = (matrix) => {
           .attr('stroke', 'steelblue')
           .attr('stroke-width', 2)
           .attr('d', pathString);
-        
+
         /*
         attachDOM.append('svg:line')
           .attr('id', node.code + '--line')
@@ -282,10 +278,10 @@ var redraw = (matrix, depth) => {
         var pathString = 'M' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + (y1 - keySize * 1.5) + ', ' + x2 + ' ' + (y2 + keySize * 1.5) + ', ' + x2 + ' ' + y2;
         d3.select('[id="' + node.code + '--path"]')
           .transition()
-            .attr('d', pathString)
-            .duration(300);
+          .attr('d', pathString)
+          .duration(300);
 
-          /*
+        /*
         d3.select('[id="' + node.code + '--line"]')
           .transition()
           .attr('x1', x1)
@@ -298,6 +294,8 @@ var redraw = (matrix, depth) => {
   });
 }
 
+var matrix = [];
+
 /**
  * Reads the json data from file input
  */
@@ -306,8 +304,88 @@ d3.json('data-btree-3.json', (data) => {
   injectParent(data.root);
 
   // convert json data to matrix
-  var matrix = convertToMatrix(data.root);
+  matrix = convertToMatrix(data.root);
 
   // draw the matrix
   draw(matrix);
 });
+
+var collapseAll = (node) => {
+  node.children.forEach((child, index) => {
+    child.expanded = false;
+    var nodeCode = getNodeCode(child);
+    d3.select('[id="' + nodeCode + '"]')
+      .transition()
+      .style('opacity', 0)
+      .duration(300);
+
+    
+
+    d3.select('[id="' + nodeCode + '--circle:' + index + ']')
+      .transition()
+      .style('fill', 'white')
+      .duration(300);
+
+    collapseAll(child);
+  });
+}
+
+var insertValue = (value) => {
+  console.log(value);
+
+  // collapse the entire tree
+  var root = matrix[0][0];
+  collapseAll(root);
+  var rootNodeCode = getNodeCode(root);
+  root.children.forEach((child, index) => {
+    d3.select('[id="' + rootNodeCode + '--circle:' + index)
+      .transition()
+      .style('fill', 'white')
+      .duration(300);
+  });
+
+  // TODO: show the new key being created
+
+  var x = parseInt(d3.select('[id="' + rootNodeCode + '--rect:0').attr('x')) + (1 + root.values.length) * keySize;
+  var y = 128;
+
+  var insertKey = svg.append('svg:g')
+    .attr('id', 'insert')
+    .style('opacity', 0);
+
+  var rect = insertKey.append('svg:rect')
+    .attr('id', 'insert--rect')
+    .attr('height', keySize)
+    .attr('width', keySize)
+    .attr('x', x)
+    .attr('y', y)
+    .attr('fill', 'white')
+    .attr('stroke', 'steelblue')
+    .attr('stroke-width', 4);
+
+  var text = insertKey.append('svg:text')
+    .attr('id', 'inserting--text')
+    .attr('x', keySize * 0.5 + x)
+    .attr('y', y + keySize / 1.5)
+    .attr('font-family', 'Sofia Pro')
+    .attr('font-size', 24)
+    .attr('fill', 'black')
+    .attr('stroke', 'black')
+    .style('text-anchor', 'middle')
+    .text(() => {
+      return value
+    });
+
+  insertKey.transition()
+    .style('opacity', 1)
+    .duration(300);
+
+  // TODO: animate the new key down to the correct leaf
+
+  // TODO: while true loop here
+  // TODO: copy the leaf and move the new key and copied leaf to the right side, merge them together under one group
+
+  // TODO: if this new node is overfilled...split; else break out of loop
+
+  // 
+}
