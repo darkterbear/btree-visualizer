@@ -236,12 +236,6 @@ var redraw = (matrix, depth) => {
 
       renderIndex++;
 
-      var attachDOM = svg;
-      if (node.parent != null) {
-        attachDOM = node.parent.group.append('svg:g')
-          .attr('id', node.code);
-      }
-
       // redraw the node
       var nodeCode = getNodeCode(node);
       node.values.forEach((key, keyIndex, keys) => {
@@ -254,7 +248,7 @@ var redraw = (matrix, depth) => {
           .transition()
           .attr('x', keySize * (keyIndex + 0.5) + x)
           .duration(300);
-
+        if (keyIndex === 3) console.log('rendered large group');
       });
 
 
@@ -446,7 +440,7 @@ var insertValue = async (value) => {
       .attr('id', thisNodeCode + '--rect:' + (keyIndex + 1));
 
     d3.select('[id="' + thisNodeCode + '--text:' + keyIndex + '"]')
-      .attr('id', thisNodeCode + '--rect:' + (keyIndex + 1));
+      .attr('id', thisNodeCode + '--text:' + (keyIndex + 1));
   }
 
   console.log('index: ' + index);
@@ -478,6 +472,7 @@ var insertValue = async (value) => {
   rect.remove();
   text.remove();
 
+  await sleep(500);
   redraw(matrix, 0);
 
   // TODO: while true loop here
@@ -485,5 +480,6 @@ var insertValue = async (value) => {
 
   // TODO: if this new node is overfilled...split; else break out of loop
 
-  // 
+  acceptingUserInput = true;
+  console.log('accepting user input');
 }
