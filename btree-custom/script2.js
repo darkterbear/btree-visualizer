@@ -1,6 +1,7 @@
 // get window dimensions
 var wW = window.innerWidth;
 var wH = window.innerHeight;
+var acceptingUserInput = true;
 
 // length, in user units, of the key display dimensions
 var keySize = 48;
@@ -187,6 +188,7 @@ var draw = (matrix) => {
           .attr('stroke', 'steelblue')
           .attr('stroke-width', 4)
           .on('click', () => {
+            if (!acceptingUserInput) return;
             if (child.expanded) {
               child.expanded = false;
               d3.select('[id="' + getNodeCode(child) + '"]')
@@ -330,7 +332,13 @@ var collapseAll = (node) => {
   });
 }
 
-var insertValue = (value) => {
+sleep = (ms) => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+var insertValue = async (value) => {
+  if (!acceptingUserInput) return;
+  acceptingUserInput = false;
   console.log(value);
 
   // collapse the entire tree
@@ -360,7 +368,7 @@ var insertValue = (value) => {
     .attr('x', x)
     .attr('y', y)
     .attr('fill', 'white')
-    .attr('stroke', 'steelblue')
+    .attr('stroke', 'green')
     .attr('stroke-width', 4);
 
   var text = insertKey.append('svg:text')
@@ -380,7 +388,46 @@ var insertValue = (value) => {
     .style('opacity', 1)
     .duration(300);
 
+  await sleep(500);
   // TODO: animate the new key down to the correct leaf
+  var thisNode = root;
+  var counter = 0;
+  while (thisNode.children.length > 0) {
+    var i;
+    counter++;
+    for (i = 0; i < thisNode.values.length; i++) {
+      var checkValue = thisNode.values[i];
+      if (value < checkValue) break;
+    }
+
+    // expand this child
+    var child = thisNode.children[i];
+    child.expanded = true;
+    var nodeCode = getNodeCode(child);
+    d3.select('[id="' + nodeCode + '"]')
+      .transition()
+      .style('opacity', 1)
+      .duration(300);
+
+    // move the newkey down
+    y += 128;
+    text.transition()
+      .attr('y', y + keySize / 1.5)
+      .duration(300);
+
+    rect.transition()
+      .attr('y', y)
+      .duration(300);
+
+    redraw(matrix, counter);
+
+    // set thisNode to child
+    thisNode = child;
+
+    await sleep(500);
+  }
+
+
 
   // TODO: while true loop here
   // TODO: copy the leaf and move the new key and copied leaf to the right side, merge them together under one group
