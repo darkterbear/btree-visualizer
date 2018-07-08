@@ -321,7 +321,7 @@ var collapseAll = (node) => {
       .style('opacity', 0)
       .duration(300);
 
-    
+
 
     d3.select('[id="' + nodeCode + '--circle:' + index + ']')
       .transition()
@@ -368,7 +368,8 @@ var insertValue = async (value) => {
     .attr('x', x)
     .attr('y', y)
     .attr('fill', 'white')
-    .attr('stroke', 'green')
+    .attr('stroke', 'steelblue')
+    //.attr('stroke', 'limegreen')
     .attr('stroke-width', 4);
 
   var text = insertKey.append('svg:text')
@@ -427,7 +428,57 @@ var insertValue = async (value) => {
     await sleep(500);
   }
 
+  var thisNodeCode = getNodeCode(thisNode);
+  var thisNodeGroup = d3.select('[id="' + thisNodeCode + '"]');
 
+  // find the index of insertion
+  var index = 0;
+  var oldMaxIndex = thisNode.values.length - 1;
+  for (; index < thisNode.values.length; index++) {
+    var checkValue = thisNode.values[index];
+    if (value < checkValue) break;
+  }
+
+  thisNode.values.splice(index, 0, value);
+
+  for (var keyIndex = oldMaxIndex; keyIndex >= index; keyIndex--) {
+    d3.select('[id="' + thisNodeCode + '--rect:' + keyIndex + '"]')
+      .attr('id', thisNodeCode + '--rect:' + (keyIndex + 1));
+
+    d3.select('[id="' + thisNodeCode + '--text:' + keyIndex + '"]')
+      .attr('id', thisNodeCode + '--rect:' + (keyIndex + 1));
+  }
+
+  console.log('index: ' + index);
+  thisNodeGroup.append('svg:rect')
+    .attr('height', keySize)
+    .attr('width', keySize)
+    .attr('x', parseInt(rect.attr('x')))
+    .attr('y', parseInt(rect.attr('y')))
+    .attr('fill', 'white')
+    .attr('stroke', 'steelblue')
+    //.attr('stroke', 'limegreen')
+    .attr('stroke-width', 4)
+    .attr('id', thisNodeCode + '--rect:' + index);
+
+  thisNodeGroup.append('svg:text')
+    .attr('id', thisNodeCode + '--text:' + index)
+    .attr('x', parseInt(text.attr('x')))
+    .attr('y', parseInt(text.attr('y')))
+    .attr('font-family', 'Sofia Pro')
+    .attr('font-size', 24)
+    .attr('fill', 'black')
+    .attr('stroke', 'black')
+    .style('text-anchor', 'middle')
+    .text(() => {
+      return value
+    });
+
+  insertKey.remove();
+  rect.remove();
+  text.remove();
+
+  redraw(matrix, 0);
 
   // TODO: while true loop here
   // TODO: copy the leaf and move the new key and copied leaf to the right side, merge them together under one group
