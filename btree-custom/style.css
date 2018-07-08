@@ -5,6 +5,10 @@ html, body {
   font-family: 'Sofia Pro';
 }
 
+circle {
+  cursor: pointer;
+}
+
 /*
 =====
 LEVEL 1. RESET STYLES

@@ -24,7 +24,7 @@ var svg = d3.select('body').append('svg:svg')
   .attr('width', wW)
   .attr('height', wH);
 
-var accumulator = (a, b) => a + b;
+var accumulator = (a, b) => parseInt(a) + parseInt(b);
 
 var getNodeCode = (node) => {
   var nodeCode = '-' + node.values.reduce(accumulator);
@@ -228,7 +228,9 @@ var redraw = (matrix, depth) => {
     var renderIndex = 0;
     row.forEach((node, index, row) => {
       // check if node should be rendered
+      if (getNodeCode(node) == 90) console.log('90 trying to be redrawn ' + Date.now())
       if (!shouldBeRendered(node)) return;
+      if (getNodeCode(node) == 90) console.log('90 should be redrawn' + Date.now());
 
       var xCenter = wW / (numRendered + 1) * (renderIndex + 1);
       var nodeWidth = node.values.length * keySize;
@@ -248,7 +250,6 @@ var redraw = (matrix, depth) => {
           .transition()
           .attr('x', keySize * (keyIndex + 0.5) + x)
           .duration(300);
-        if (keyIndex === 3) console.log('rendered large group');
       });
 
 
@@ -331,9 +332,11 @@ sleep = (ms) => {
 }
 
 var insertValue = async (value) => {
+  // dont allow insert when another insert is happening
   if (!acceptingUserInput) return;
+
+  // disable user input while insert is in progress
   acceptingUserInput = false;
-  console.log(value);
 
   // collapse the entire tree
   var root = matrix[0][0];
@@ -346,7 +349,7 @@ var insertValue = async (value) => {
       .duration(300);
   });
 
-  // TODO: show the new key being created
+  // show the new key being created
 
   var x = parseInt(d3.select('[id="' + rootNodeCode + '--rect:0').attr('x')) + (1 + root.values.length) * keySize;
   var y = 128;
@@ -384,19 +387,19 @@ var insertValue = async (value) => {
     .duration(300);
 
   await sleep(500);
-  // TODO: animate the new key down to the correct leaf
+
+  // animate the new key down to the correct leaf
   var thisNode = root;
-  var counter = 0;
-  while (thisNode.children.length > 0) {
-    var i;
-    counter++;
-    for (i = 0; i < thisNode.values.length; i++) {
+  while (thisNode.children.length > 0) { // while not at leaf, continue traversing + animating down
+    var i; // i represents which child to insert into
+    for (i = 0; i < thisNode.values.length; i++) { // find the correct child by comparing against values
       var checkValue = thisNode.values[i];
       if (value < checkValue) break;
     }
 
-    // expand this child
     var child = thisNode.children[i];
+    
+    // expand this child
     child.expanded = true;
     var nodeCode = getNodeCode(child);
     d3.select('[id="' + nodeCode + '"]')
@@ -404,7 +407,7 @@ var insertValue = async (value) => {
       .style('opacity', 1)
       .duration(300);
 
-    // move the newkey down
+    // move the newkey down to the same level as the newly expanded child
     y += 128;
     text.transition()
       .attr('y', y + keySize / 1.5)
@@ -414,7 +417,8 @@ var insertValue = async (value) => {
       .attr('y', y)
       .duration(300);
 
-    redraw(matrix, counter);
+    // redraw the matrix
+    redraw(matrix, 0);
 
     // set thisNode to child
     thisNode = child;
@@ -422,6 +426,8 @@ var insertValue = async (value) => {
     await sleep(500);
   }
 
+  // thisNode is now the correct leaf node
+  // insert the new value into this leaf node
   var thisNodeCode = getNodeCode(thisNode);
   var thisNodeGroup = d3.select('[id="' + thisNodeCode + '"]');
 
@@ -433,17 +439,64 @@ var insertValue = async (value) => {
     if (value < checkValue) break;
   }
 
+  // insert the new value into the leaf node
   thisNode.values.splice(index, 0, value);
 
-  for (var keyIndex = oldMaxIndex; keyIndex >= index; keyIndex--) {
-    d3.select('[id="' + thisNodeCode + '--rect:' + keyIndex + '"]')
-      .attr('id', thisNodeCode + '--rect:' + (keyIndex + 1));
+  // calculate the new nodecode
+  var newNodeCode = getNodeCode(thisNode);
 
-    d3.select('[id="' + thisNodeCode + '--text:' + keyIndex + '"]')
-      .attr('id', thisNodeCode + '--text:' + (keyIndex + 1));
+  // update the nodecode of the node's group element
+  d3.select('[id="' + thisNodeCode + '"]')
+    .attr('id', newNodeCode);
+
+  // update the id's of the rects and texts of the node w/ the new nodecode
+  // update keys from 0 to point of insertion
+  for (var i = 0; i < index; i++) { 
+    d3.select('[id="' + thisNodeCode + '--rect:' + i + '"]')
+      .attr('id', newNodeCode + '--rect:' + i);
+
+    d3.select('[id="' + thisNodeCode + '--text:' + i + '"]')
+      .attr('id', newNodeCode + '--text:' + i);
   }
 
-  console.log('index: ' + index);
+  // shift the keyIndex's of these rect's and text's up by one to make space for new key
+  // also update the id nodecodes in the process
+  for (var keyIndex = oldMaxIndex; keyIndex >= index; keyIndex--) {
+    d3.select('[id="' + thisNodeCode + '--rect:' + keyIndex + '"]')
+      .attr('id', newNodeCode + '--rect:' + (keyIndex + 1));
+
+    d3.select('[id="' + thisNodeCode + '--text:' + keyIndex + '"]')
+      .attr('id', newNodeCode + '--text:' + (keyIndex + 1));
+  }
+
+  // update nodecode and id of path
+  thisNode.code = newNodeCode;
+  d3.select('[id="' + thisNodeCode + '--path"]')
+    .attr('id', newNodeCode + '--path');
+
+  // update nodecode and id of parent group, path, keys, and circles
+  var newParentCode = getNodeCode(thisNode.parent);
+  d3.select('[id="' + thisNode.parent.code + '--path"]')
+    .attr('id', newParentCode + '--path');
+
+  thisNode.parent.values.forEach((value, index) => {
+    d3.select('[id="' + thisNode.parent.code + '--rect:' + index + '"]')
+      .attr('id', newParentCode + '--rect:' + index);
+
+    d3.select('[id="' + thisNode.parent.code + '--text:' + index + '"]')
+      .attr('id', newParentCode + '--text:' + index);
+
+    d3.select('[id="' + thisNode.parent.code + '--circle:' + index + '"]')
+      .attr('id', newParentCode + '--circle:' + index);
+  });
+
+  d3.select('[id="' + thisNode.parent.code + '--circle:' + thisNode.parent.values.length + '"]')
+    .attr('id', newParentCode + '--circle:' + thisNode.parent.values.length);
+
+  thisNode.parent.code = newParentCode
+  thisNode.parent.group.attr('id', thisNode.parent.code);
+
+  // insert the new rect element
   thisNodeGroup.append('svg:rect')
     .attr('height', keySize)
     .attr('width', keySize)
@@ -453,10 +506,11 @@ var insertValue = async (value) => {
     .attr('stroke', 'steelblue')
     //.attr('stroke', 'limegreen')
     .attr('stroke-width', 4)
-    .attr('id', thisNodeCode + '--rect:' + index);
+    .attr('id', newNodeCode + '--rect:' + index);
 
+  // insert the new text element
   thisNodeGroup.append('svg:text')
-    .attr('id', thisNodeCode + '--text:' + index)
+    .attr('id', newNodeCode + '--text:' + index)
     .attr('x', parseInt(text.attr('x')))
     .attr('y', parseInt(text.attr('y')))
     .attr('font-family', 'Sofia Pro')
@@ -468,11 +522,12 @@ var insertValue = async (value) => {
       return value
     });
 
+  // remove the temporary insert elements
   insertKey.remove();
   rect.remove();
   text.remove();
 
-  await sleep(500);
+  // redraw to animate the insertion
   redraw(matrix, 0);
 
   // TODO: while true loop here
@@ -481,5 +536,4 @@ var insertValue = async (value) => {
   // TODO: if this new node is overfilled...split; else break out of loop
 
   acceptingUserInput = true;
-  console.log('accepting user input');
 }
