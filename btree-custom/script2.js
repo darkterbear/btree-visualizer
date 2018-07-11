@@ -2,6 +2,7 @@
 var wW = window.innerWidth;
 var wH = window.innerHeight;
 var acceptingUserInput = true;
+var maxKeys = 0;
 
 // length, in user units, of the key display dimensions
 var keySize = 48;
@@ -297,6 +298,7 @@ var matrix = [];
  * Reads the json data from file input
  */
 d3.json('data-btree-3.json', (data) => {
+  maxKeys = data.maxKeys;
   // inject parent data
   injectParent(data.root);
 
@@ -531,6 +533,65 @@ var insertValue = async (value) => {
   redraw(matrix, 0);
 
   // TODO: if this new node is overfilled...split + promote and recurse
+  while (thisNode.values.length > maxKeys) {
+    // find promote value
+    var promoteIndex = Math.floor(maxKeys / 2);
+
+    // split the rest of the keys into 2 nodes
+    // dont forget to recalculate node codes!
+    // when changing a node's code, keep track of: its group, rect, text, circles, path, and those of its parent
+    
+    var leftKeys = thisNode.values.slice(0, promoteIndex);
+    var rightKeys = thisNode.values.slice(promoteIndex + 1, thisNode.values.length);
+
+    var leftChildren = thisNode.children.slice(0, promoteIndex + 1);
+    var rightChildren = thisNode.children.slice(promoteIndex + 1, thisNode.children.length);
+
+    var parentGroup = thisNode.parent ? thisNode.parent.group : svg; // attach the split node groups to the parent group element; if this is root (parent is null), attach to svg
+
+    var leftNode = {
+      expanded: true,
+      values: leftKeys,
+      children: leftChildren,
+      parent: thisNode.parent
+    }
+    leftNodeCode.code = getNodeCode(leftNode);
+
+    var rightNode = {
+      expanded: true,
+      values: rightKeys,
+      children: rightChildren,
+      parent: thisNode.parent
+    }
+    rightNode.code = getNodeCode(rightNode);
+
+    /** ********* create the left group ******** **/
+    leftNode.group = parentGroup.append('svg:g');
+
+    /** ********* create the right group ******** **/
+    rightNode.group = parentGroup.append('svg:g');
+
+    /** ********* move elements over to the left group ******** **/
+    leftChildren.forEach((leftChild) => {
+      leftChild.parent = leftNode;
+      leftNode.group.append(leftChild.group.remove());
+    });
+
+    /** ********* move elements over to the right group ******** **/
+    rightChildren.forEach((rightChild) => {
+      rightChild.parent = rightNode;
+      rightNode.group.append(righthild.group.remove());
+    });
+
+    /** ********* destroy the old group ******** **/
+    thisNode.group.remove();
+    
+    /** ********* recalculate the  ******** **/
+
+    // draw the new paths
+
+    // set thisNode pointer to the parent
+  }
 
   acceptingUserInput = true;
 }
