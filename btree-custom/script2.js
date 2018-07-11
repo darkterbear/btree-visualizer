@@ -530,10 +530,7 @@ var insertValue = async (value) => {
   // redraw to animate the insertion
   redraw(matrix, 0);
 
-  // TODO: while true loop here
-  // TODO: copy the leaf and move the new key and copied leaf to the right side, merge them together under one group
-
-  // TODO: if this new node is overfilled...split; else break out of loop
+  // TODO: if this new node is overfilled...split + promote and recurse
 
   acceptingUserInput = true;
 }
