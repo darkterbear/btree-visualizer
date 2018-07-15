@@ -229,9 +229,7 @@ var redraw = (matrix, depth) => {
     var renderIndex = 0;
     row.forEach((node, index, row) => {
       // check if node should be rendered
-      if (getNodeCode(node) == 90) console.log('90 trying to be redrawn ' + Date.now())
       if (!shouldBeRendered(node)) return;
-      if (getNodeCode(node) == 90) console.log('90 should be redrawn' + Date.now());
 
       var xCenter = wW / (numRendered + 1) * (renderIndex + 1);
       var nodeWidth = node.values.length * keySize;
@@ -297,7 +295,7 @@ var matrix = [];
 /**
  * Reads the json data from file input
  */
-d3.json('data-btree-3.json', (data) => {
+d3.json('data-btree-2.json', (data) => {
   maxKeys = data.maxKeys;
   // inject parent data
   injectParent(data.root);
@@ -555,7 +553,7 @@ var insertValue = async (value) => {
       children: leftChildren,
       parent: thisNode.parent
     }
-    leftNodeCode.code = getNodeCode(leftNode);
+    leftNode.code = getNodeCode(leftNode);
 
     var rightNode = {
       expanded: true,
@@ -566,31 +564,148 @@ var insertValue = async (value) => {
     rightNode.code = getNodeCode(rightNode);
 
     /** ********* create the left group ******** **/
-    leftNode.group = parentGroup.append('svg:g');
+    leftNode.group = parentGroup.append('svg:g')
+      .attr('id', leftNode.code);
 
     /** ********* create the right group ******** **/
-    rightNode.group = parentGroup.append('svg:g');
+    rightNode.group = parentGroup.append('svg:g')
+      .attr('id', rightNode.code);
+    
+    /** ********* render the new rects and texts for left node ******** **/
+    leftNode.values.forEach((value, index) => {
+      leftNode.group.append('svg:rect')
+        .attr('id', leftNode.code + '--rect:' + index)
+        .attr('height', keySize)
+        .attr('width', keySize)
+        .attr('fill', 'white')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 4);
 
-    /** ********* move elements over to the left group ******** **/
-    leftChildren.forEach((leftChild) => {
-      leftChild.parent = leftNode;
+      leftNode.group.append('svg:text')
+        .attr('id', leftNode.code + '--text:' + keyIndex)
+        .attr('font-family', 'Sofia Pro')
+        .attr('font-size', 24)
+        .attr('fill', 'black')
+        .attr('stroke', 'black')
+        .style('text-anchor', 'middle')
+        .text(() => {
+          return value;
+        });
+    });
+
+    /** ********* render the new rects and texts for right node ******** **/
+    rightNode.values.forEach((value, index) => {
+      rightNode.group.append('svg:rect')
+        .attr('id', rightNode.code + '--rect:' + index)
+        .attr('height', keySize)
+        .attr('width', keySize)
+        .attr('fill', 'white')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 4);
+
+      rightNode.group.append('svg:text')
+        .attr('id', rightNode.code + '--text:' + keyIndex)
+        .attr('font-family', 'Sofia Pro')
+        .attr('font-size', 24)
+        .attr('fill', 'black')
+        .attr('stroke', 'black')
+        .style('text-anchor', 'middle')
+        .text(() => {
+          return value;
+        });
+    });
+
+    /** ********* move elements over to the left group and draw circles ******** **/
+    leftChildren.forEach((child, childIndex) => {
+      child.parent = leftNode;
       leftNode.group.append(leftChild.group.remove());
+      leftNode.group.append('svg:circle')
+        .attr('id', leftNode.code + '--circle:' + childIndex)
+        .attr('r', keySize / 8)
+        .attr('fill', child.expanded ? 'steelblue' : 'white')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 4)
+        .on('click', () => {
+          if (!acceptingUserInput) return;
+          if (child.expanded) {
+            child.expanded = false;
+            d3.select('[id="' + getNodeCode(child) + '"]')
+              .transition()
+              .style('opacity', 0)
+              .duration(300);
+
+            circle.transition()
+              .style('fill', 'white')
+              .duration(300);
+          } else {
+            child.expanded = true;
+            d3.select('[id="' + getNodeCode(child) + '"]')
+              .transition()
+              .style('opacity', 1)
+              .duration(300);
+
+            circle.transition()
+              .style('fill', 'steelblue')
+              .duration(300);
+          }
+
+          redraw(matrix, depth);
+        });
     });
 
-    /** ********* move elements over to the right group ******** **/
-    rightChildren.forEach((rightChild) => {
-      rightChild.parent = rightNode;
-      rightNode.group.append(righthild.group.remove());
-    });
+    /** ********* move elements over to the right group and draw circles ******** **/
+    rightChildren.forEach((child, childIndex) => {
+      child.parent = rightNode;
+      rightNode.group.append(child.group.remove());
+      rightNode.group.append('svg:circle')
+        .attr('id', rightNode.code + '--circle:' + childIndex)
+        .attr('r', keySize / 8)
+        .attr('fill', child.expanded ? 'steelblue' : 'white')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 4)
+        .on('click', () => {
+          if (!acceptingUserInput) return;
+          if (child.expanded) {
+            child.expanded = false;
+            d3.select('[id="' + getNodeCode(child) + '"]')
+              .transition()
+              .style('opacity', 0)
+              .duration(300);
+
+            circle.transition()
+              .style('fill', 'white')
+              .duration(300);
+          } else {
+            child.expanded = true;
+            d3.select('[id="' + getNodeCode(child) + '"]')
+              .transition()
+              .style('opacity', 1)
+              .duration(300);
+
+            circle.transition()
+              .style('fill', 'steelblue')
+              .duration(300);
+          }
+
+          redraw(matrix, depth);
+        });
+    }
+    /** ********* draw the new paths ******** **/
 
     /** ********* destroy the old group ******** **/
     thisNode.group.remove();
-    
-    /** ********* recalculate the  ******** **/
 
-    // draw the new paths
+    /** ********* put the promoted key into the parent node ******** **/
+    
+    /** ********* recalculate the parent's nodecode ******** **/
+    thisNode.parent.code = getNodeCode(thisNode.parent);
+
+    /** ********* redraw the entire thing ******** **/
+    redraw(matrix);
+    
 
     // set thisNode pointer to the parent
+    thisNode = thisNode.parent;
   }
 
   acceptingUserInput = true;

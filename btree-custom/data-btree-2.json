@@ -1,0 +1,16 @@
+{
+  "maxKeys": 2,
+  "root": {
+    "expanded": true,
+    "values": [16],
+    "children": [{
+      "expanded": false,
+      "values": [4, 8],
+      "children": []
+    }, {
+      "expanded": false,
+      "values": [20, 24],
+      "children": []
+    }]
+  }
+}
