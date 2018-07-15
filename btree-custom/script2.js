@@ -229,6 +229,7 @@ var redraw = (matrix, depth) => {
     var renderIndex = 0;
     row.forEach((node, index, row) => {
       // check if node should be rendered
+      console.log(node.code + ' should be rendered: ' + shouldBeRendered(node));
       if (!shouldBeRendered(node)) return;
 
       var xCenter = wW / (numRendered + 1) * (renderIndex + 1);
@@ -530,10 +531,28 @@ var insertValue = async (value) => {
   // redraw to animate the insertion
   redraw(matrix, 0);
 
+  await sleep(1000);
+
+  var matrixDepth = matrix.length - 1;
+
   // TODO: if this new node is overfilled...split + promote and recurse
   while (thisNode.values.length > maxKeys) {
+
+    // a split will modify matrix structure, find the index of thisNode in the layer w/ depth of matrixdepth
+    var thisNodeMatrixIndex = 0;
+    for (; thisNodeMatrixIndex < matrix[matrixDepth].length; thisNodeMatrixIndex++) {
+      if (matrix[matrixDepth][thisNodeMatrixIndex].code == thisNode.code) break;
+    }
+
     // find promote value
     var promoteIndex = Math.floor(maxKeys / 2);
+    var promoteValue = thisNode.values[promoteIndex];
+
+    var promoteKeyRect = d3.select('[id="' + thisNode.code + '--rect:' + promoteIndex + '"]');
+    var promoteKeyText = d3.select('[id="' + thisNode.code + '--text:' + promoteIndex + '"]');
+
+    var leftNodeX = parseInt(d3.select('[id="' + thisNode.code + '--rect:' + 0 + '"]').attr('x'));
+    var rightNodeX = parseInt(d3.select('[id="' + thisNode.code + '--rect:' + (promoteIndex + 1) + '"]').attr('x'));
 
     // split the rest of the keys into 2 nodes
     // dont forget to recalculate node codes!
@@ -575,6 +594,8 @@ var insertValue = async (value) => {
     leftNode.values.forEach((value, index) => {
       leftNode.group.append('svg:rect')
         .attr('id', leftNode.code + '--rect:' + index)
+        .attr('x', leftNodeX)
+        .attr('y', 128 * (matrixDepth))
         .attr('height', keySize)
         .attr('width', keySize)
         .attr('fill', 'white')
@@ -583,6 +604,8 @@ var insertValue = async (value) => {
 
       leftNode.group.append('svg:text')
         .attr('id', leftNode.code + '--text:' + keyIndex)
+        .attr('x', leftNodeX)
+        .attr('y', 128 * (matrixDepth) + keySize / 1.5)
         .attr('font-family', 'Sofia Pro')
         .attr('font-size', 24)
         .attr('fill', 'black')
@@ -597,6 +620,8 @@ var insertValue = async (value) => {
     rightNode.values.forEach((value, index) => {
       rightNode.group.append('svg:rect')
         .attr('id', rightNode.code + '--rect:' + index)
+        .attr('x', rightNodeX)
+        .attr('y', 128 * (matrixDepth))
         .attr('height', keySize)
         .attr('width', keySize)
         .attr('fill', 'white')
@@ -605,6 +630,8 @@ var insertValue = async (value) => {
 
       rightNode.group.append('svg:text')
         .attr('id', rightNode.code + '--text:' + keyIndex)
+        .attr('x', rightNodeX)
+        .attr('y', 128 * (matrixDepth) + keySize / 1.5)
         .attr('font-family', 'Sofia Pro')
         .attr('font-size', 24)
         .attr('fill', 'black')
@@ -689,19 +716,66 @@ var insertValue = async (value) => {
 
           redraw(matrix, depth);
         });
-    }
+    });
     /** ********* draw the new paths ******** **/
 
-    /** ********* destroy the old group ******** **/
-    thisNode.group.remove();
-
     /** ********* put the promoted key into the parent node ******** **/
-    
+    var parentNode = thisNode.parent;
+    // find the index of insertion
+    var insertIndex = 0;
+    for (; insertIndex < this.values.length; insertIndex++) {
+      if (promoteValue < parentNode.values[insertIndex]) break;
+    }
+
+    // insert the value into data
+    parentNode.values.splice(insertIndex, 0, promoteValue);
+
+    /** ********* reinject the parent's children ******** **/
+    for (var i = 0; i < parentNode.children.length; i++) {
+      if (parentNode.children[i].code == thisNode.code) {
+        parentNode.children.splice(i, 1);
+        parentNode.children.splice(i, 0, rightNode);
+        parentNode.children.splice(i, 0, leftNode);
+        break;
+      }
+    }
+
     /** ********* recalculate the parent's nodecode ******** **/
-    thisNode.parent.code = getNodeCode(thisNode.parent);
+    var oldParentNodeCode = parentNode.code;
+    parentNode.code = getNodeCode(parentNode);
+
+    // update the nodecode of the parent's group element
+    d3.select('[id="' + oldParentNodeCode + '"]')
+      .attr('id', parentNode.code);
+
+    // update the id's of the rects and texts of the node w/ the new nodecode
+    // update keys from 0 to point of insertion
+    for (var i = 0; i < insertIndex; i++) {
+      d3.select('[id="' + oldParentNodeCode + '--rect:' + i + '"]')
+        .attr('id', parentNode.code + '--rect:' + i);
+
+      d3.select('[id="' + oldParentNodeCode + '--text:' + i + '"]')
+        .attr('id', parentNode.code + '--text:' + i);
+    }
+
+    parentGroup.append(promoteKeyRect.remove());
+    parentGroup.append(promoteKeyText.remove());
+
+    promoteKeyRect.attr('[id="' + thisNode.parent.code + '--rect:' + )
+
+    /** ********* destroy the old group ******** **/
+    thisNode.group.transition()
+      .style('opacity', 0)
+      .duration(300);
+    await sleep(500);
+
+    thisNode.group.remove();
+    matrix[matrixDepth].splice(thisNodeMatrixIndex, 1);
+    matrix[matrixDepth].splice(thisNodeMatrixIndex, 0, rightNode);
+    matrix[matrixDepth].splice(thisNodeMatrixIndex, 0, leftNode);
 
     /** ********* redraw the entire thing ******** **/
-    redraw(matrix);
+    redraw(matrix, 0);
     
 
     // set thisNode pointer to the parent
