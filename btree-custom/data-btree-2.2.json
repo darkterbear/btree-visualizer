@@ -1,0 +1,20 @@
+{
+  "maxKeys": 5,
+  "root": {
+    "expanded": true,
+    "values": [16, 23],
+    "children": [{
+      "expanded": false,
+      "values": [4, 8],
+      "children": []
+    }, {
+      "expanded": false,
+      "values": [20, 22],
+      "children": []
+    }, {
+      "expanded": false,
+      "values": [24, 28],
+      "children": []
+    }]
+  }
+}

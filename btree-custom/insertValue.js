@@ -1,338 +1,4 @@
-// get window dimensions
-var wW = window.innerWidth;
-var wH = window.innerHeight;
-var acceptingUserInput = true;
-var maxKeys = 0;
-
-// length, in user units, of the key display dimensions
-var keySize = 48;
-
-window.onload = () => {
-  /**
-   * Just Make sure to return false so that your request will not go the server script
-   */
-  document.querySelector("#modifyForm").addEventListener("submit",
-    function (e) {
-
-      //some code
-      document.getElementById('insert').value = ''
-      e.preventDefault();
-    })
-}
-
-// root svg canvas
-var svg = d3.select('body').append('svg:svg')
-  .attr('width', wW)
-  .attr('height', wH);
-
-var accumulator = (a, b) => parseInt(a) + parseInt(b);
-
-var getNodeCode = (node) => {
-  var nodeCode = '-' + node.values.reduce(accumulator);
-  node.children.forEach((child) => {
-    nodeCode += '-' + child.values.reduce(accumulator);
-  });
-
-  return nodeCode.substring(1);
-}
-
-var injectParent = (node) => {
-  // also add a code for every node for group identification
-  node.children.forEach((child) => {
-    child.parent = node;
-    injectParent(child);
-  });
-  node.code = getNodeCode(node);
-}
-
-/**
- * Converts a tree structure to a matrix for easier handling
- * Uses BFS to traverse
- */
-var convertToMatrix = (data) => {
-  var stack = [];
-  stack.push(data);
-  stack.push(null);
-  var depth = 0;
-
-  matrix = [];
-  matrix.push([]);
-
-  while (stack.length > 0) {
-    var current = stack.splice(0, 1)[0];
-    if (current == null) {
-      depth++;
-      matrix.push([]);
-      if (stack[0] == null) break;
-      stack.push(null);
-      continue;
-    }
-
-    matrix[depth].push(current);
-    current.children.forEach((child) => {
-      stack.push(child);
-    });
-  }
-
-  return matrix;
-}
-
-var getNodesIn = (row) => {
-  return row.filter(n => n.expanded).length;
-}
-
-var shouldBeRendered = (node) => {
-  if (!node.expanded) return false;
-  if (node.parent == null) return true;
-  return shouldBeRendered(node.parent);
-}
-
-var getChildIndex = (node) => {
-  var parent = node.parent;
-
-  for (var i = 0; i < parent.children.length; i++) {
-    if (parent.children[i].code == node.code) return i;
-  }
-}
-
-/**
- * Draws the matrix onto the svg canvas
- * @param {*} matrix 
- */
-var draw = (matrix) => {
-  matrix.forEach((row, depth, matrix) => {
-
-    var y = (depth + 1) * 128;
-
-    var numRendered = row.filter(n => shouldBeRendered(n)).length;
-    var renderIndex = 0;
-    row.forEach((node, index, row) => {
-      // check if node should be rendered
-      var isNodeRendered = shouldBeRendered(node);
-
-      // calculate node position
-      var xCenter = wW / (numRendered + 1) * (renderIndex + 1);
-      var nodeWidth = node.values.length * keySize;
-      var x = xCenter - nodeWidth / 2;
-
-      if (isNodeRendered) renderIndex++;
-
-      var attachDOM = svg;
-      if (node.parent != null) {
-        attachDOM = node.parent.group.append('svg:g')
-          .attr('id', node.code);
-      }
-
-      if (!isNodeRendered) attachDOM.style('opacity', 0);
-
-      // draw the line to the parent
-      if (node.parent) {
-        var x1 = xCenter;
-        var y1 = y;
-
-        var x2 = d3.select('[id="' + node.parent.code + '--circle:' + getChildIndex(node) + '"]').attr('cx');
-        var y2 = keySize + parseInt(d3.select('[id="' + node.parent.code + '--rect:' + 0 + '"]').attr('y'));
-
-        var pathString = 'M' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + (y1 - keySize * 1.5) + ', ' + x2 + ' ' + (y2 + keySize * 1.5) + ', ' + x2 + ' ' + y2;
-        var path = attachDOM.append('svg:path')
-          .attr('id', node.code + '--path')
-          .attr('fill', 'transparent')
-          .attr('stroke', 'steelblue')
-          .attr('stroke-width', 2)
-          .attr('d', pathString);
-
-        /*
-        attachDOM.append('svg:line')
-          .attr('id', node.code + '--line')
-          .attr('x1', x1)
-          .attr('y1', y1)
-          .attr('x2', x2)
-          .attr('y2', y2)
-          .style('stroke', 'steelblue')
-          .style('stroke-width', 2);*/
-      }
-
-      // draw the node itself
-      node.values.forEach((key, keyIndex, keys) => {
-        attachDOM.append('svg:rect')
-          .attr('id', node.code + '--rect:' + keyIndex)
-          .attr('height', keySize)
-          .attr('width', keySize)
-          .attr('x', keySize * keyIndex + x)
-          .attr('y', y)
-          .attr('fill', 'white')
-          .attr('stroke', 'steelblue')
-          .attr('stroke-width', 4);
-
-        attachDOM.append('svg:text')
-          .attr('id', node.code + '--text:' + keyIndex)
-          .attr('x', keySize * (keyIndex + 0.5) + x)
-          .attr('y', y + keySize / 1.5)
-          .attr('font-family', 'Sofia Pro')
-          .attr('font-size', 24)
-          .attr('fill', 'black')
-          .attr('stroke', 'black')
-          .style('text-anchor', 'middle')
-          .text(() => {
-            return key
-          });
-      });
-
-      // draw the node's children
-      node.children.forEach((child, childIndex, children) => {
-        var circle = attachDOM.append('svg:circle')
-          .attr('id', node.code + '--circle:' + childIndex)
-          .attr('cx', x + (keySize * childIndex))
-          .attr('cy', y + keySize)
-          .attr('r', keySize / 8)
-          .attr('fill', child.expanded ? 'steelblue' : 'white')
-          .attr('stroke', 'steelblue')
-          .attr('stroke-width', 4)
-          .on('click', () => {
-            if (!acceptingUserInput) return;
-            if (child.expanded) {
-              child.expanded = false;
-              d3.select('[id="' + getNodeCode(child) + '"]')
-                .transition()
-                .style('opacity', 0)
-                .duration(300);
-
-              circle.transition()
-                .style('fill', 'white')
-                .duration(300);
-            } else {
-              child.expanded = true;
-              d3.select('[id="' + getNodeCode(child) + '"]')
-                .transition()
-                .style('opacity', 1)
-                .duration(300);
-
-              circle.transition()
-                .style('fill', 'steelblue')
-                .duration(300);
-            }
-
-            redraw(matrix, depth);
-          });
-      });
-
-      node.group = attachDOM;
-    });
-  });
-}
-
-var redraw = (matrix, depth) => {
-  matrix.forEach((row, depth, matrix) => {
-    var y = (depth + 1) * 128;
-
-    var numRendered = row.filter(n => shouldBeRendered(n)).length;
-    var renderIndex = 0;
-    row.forEach((node, index, row) => {
-      // check if node should be rendered
-      console.log(node.code + ' should be rendered: ' + shouldBeRendered(node));
-      if (!shouldBeRendered(node)) return;
-
-      var xCenter = wW / (numRendered + 1) * (renderIndex + 1);
-      var nodeWidth = node.values.length * keySize;
-      var x = xCenter - nodeWidth / 2;
-
-      renderIndex++;
-
-      // redraw the node
-      var nodeCode = getNodeCode(node);
-      node.values.forEach((key, keyIndex, keys) => {
-        d3.select('[id="' + nodeCode + '--rect:' + keyIndex + '"]')
-          .transition()
-          .attr('x', keySize * keyIndex + x)
-          .duration(300);
-
-        d3.select('[id="' + nodeCode + '--text:' + keyIndex + '"]')
-          .transition()
-          .attr('x', keySize * (keyIndex + 0.5) + x)
-          .duration(300);
-      });
-
-
-      // redraw the node's children circles
-      node.children.forEach((child, childIndex, children) => {
-        d3.select('[id="' + nodeCode + '--circle:' + childIndex + '"]')
-          .transition()
-          .attr('cx', x + (keySize * childIndex))
-          .style('fill', child.expanded ? 'steelblue' : 'white')
-          .duration(300);
-
-        child.circleX = x + (keySize * childIndex);
-      });
-
-      // draw the line to the parent
-      if (node.parent) {
-        var x1 = xCenter;
-        var y1 = y;
-
-        var x2 = node.circleX; // d3.select('[id="' + node.parent.code + '--circle:' + getChildIndex(node) + '"]').attr('cx');
-        var y2 = keySize + parseInt(d3.select('[id="' + node.parent.code + '--rect:' + 0 + '"]').attr('y'));
-
-        var pathString = 'M' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + (y1 - keySize * 1.5) + ', ' + x2 + ' ' + (y2 + keySize * 1.5) + ', ' + x2 + ' ' + y2;
-        d3.select('[id="' + node.code + '--path"]')
-          .transition()
-          .attr('d', pathString)
-          .duration(300);
-
-        /*
-        d3.select('[id="' + node.code + '--line"]')
-          .transition()
-          .attr('x1', x1)
-          .attr('y1', y1)
-          .attr('x2', x2)
-          .attr('y2', y2)
-          .duration(300);*/
-      }
-    });
-  });
-}
-
-var matrix = [];
-
-/**
- * Reads the json data from file input
- */
-d3.json('data-btree-2.json', (data) => {
-  maxKeys = data.maxKeys;
-  // inject parent data
-  injectParent(data.root);
-
-  // convert json data to matrix
-  matrix = convertToMatrix(data.root);
-
-  // draw the matrix
-  draw(matrix);
-});
-
-var collapseAll = (node) => {
-  node.children.forEach((child, index) => {
-    child.expanded = false;
-    var nodeCode = getNodeCode(child);
-    d3.select('[id="' + nodeCode + '"]')
-      .transition()
-      .style('opacity', 0)
-      .duration(300);
-
-
-
-    d3.select('[id="' + nodeCode + '--circle:' + index + ']')
-      .transition()
-      .style('fill', 'white')
-      .duration(300);
-
-    collapseAll(child);
-  });
-}
-
-sleep = (ms) => {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-var insertValue = async (value) => {
+const insertValue = async (value) => {
   // dont allow insert when another insert is happening
   if (!acceptingUserInput) return;
 
@@ -494,7 +160,7 @@ var insertValue = async (value) => {
   d3.select('[id="' + thisNode.parent.code + '--circle:' + thisNode.parent.values.length + '"]')
     .attr('id', newParentCode + '--circle:' + thisNode.parent.values.length);
 
-  thisNode.parent.code = newParentCode
+  thisNode.parent.code = newParentCode;
   thisNode.parent.group.attr('id', thisNode.parent.code);
 
   // insert the new rect element
@@ -520,7 +186,7 @@ var insertValue = async (value) => {
     .attr('stroke', 'black')
     .style('text-anchor', 'middle')
     .text(() => {
-      return value
+      return value;
     });
 
   // remove the temporary insert elements
@@ -531,18 +197,18 @@ var insertValue = async (value) => {
   // redraw to animate the insertion
   redraw(matrix, 0);
 
-  await sleep(1000);
+  await sleep(300);
 
-  var matrixDepth = matrix.length - 1;
+  // find leaf depth (should be deepest - 1)
+  var matrixDepth = matrix.length - 2;
 
-  // TODO: if this new node is overfilled...split + promote and recurse
   while (thisNode.values.length > maxKeys) {
-
     // a split will modify matrix structure, find the index of thisNode in the layer w/ depth of matrixdepth
     var thisNodeMatrixIndex = 0;
     for (; thisNodeMatrixIndex < matrix[matrixDepth].length; thisNodeMatrixIndex++) {
       if (matrix[matrixDepth][thisNodeMatrixIndex].code == thisNode.code) break;
     }
+    console.log(thisNodeMatrixIndex);
 
     // find promote value
     var promoteIndex = Math.floor(maxKeys / 2);
@@ -594,8 +260,8 @@ var insertValue = async (value) => {
     leftNode.values.forEach((value, index) => {
       leftNode.group.append('svg:rect')
         .attr('id', leftNode.code + '--rect:' + index)
-        .attr('x', leftNodeX)
-        .attr('y', 128 * (matrixDepth))
+        .attr('x', leftNodeX + keySize * index)
+        .attr('y', 128 * (matrixDepth + 1))
         .attr('height', keySize)
         .attr('width', keySize)
         .attr('fill', 'white')
@@ -603,9 +269,9 @@ var insertValue = async (value) => {
         .attr('stroke-width', 4);
 
       leftNode.group.append('svg:text')
-        .attr('id', leftNode.code + '--text:' + keyIndex)
-        .attr('x', leftNodeX)
-        .attr('y', 128 * (matrixDepth) + keySize / 1.5)
+        .attr('id', leftNode.code + '--text:' + index)
+        .attr('x', leftNodeX + keySize * (index + 0.5))
+        .attr('y', 128 * (matrixDepth + 1) + keySize / 1.5)
         .attr('font-family', 'Sofia Pro')
         .attr('font-size', 24)
         .attr('fill', 'black')
@@ -620,8 +286,8 @@ var insertValue = async (value) => {
     rightNode.values.forEach((value, index) => {
       rightNode.group.append('svg:rect')
         .attr('id', rightNode.code + '--rect:' + index)
-        .attr('x', rightNodeX)
-        .attr('y', 128 * (matrixDepth))
+        .attr('x', rightNodeX + keySize * index)
+        .attr('y', 128 * (matrixDepth + 1))
         .attr('height', keySize)
         .attr('width', keySize)
         .attr('fill', 'white')
@@ -629,9 +295,9 @@ var insertValue = async (value) => {
         .attr('stroke-width', 4);
 
       rightNode.group.append('svg:text')
-        .attr('id', rightNode.code + '--text:' + keyIndex)
-        .attr('x', rightNodeX)
-        .attr('y', 128 * (matrixDepth) + keySize / 1.5)
+        .attr('id', rightNode.code + '--text:' + index)
+        .attr('x', rightNodeX + keySize * (index + 0.5))
+        .attr('y', 128 * (matrixDepth + 1) + keySize / 1.5)
         .attr('font-family', 'Sofia Pro')
         .attr('font-size', 24)
         .attr('fill', 'black')
@@ -645,7 +311,10 @@ var insertValue = async (value) => {
     /** ********* move elements over to the left group and draw circles ******** **/
     leftChildren.forEach((child, childIndex) => {
       child.parent = leftNode;
-      leftNode.group.append(leftChild.group.remove());
+      var removed = child.group.remove();
+      leftNode.group.append(() => {
+        return removed.node();
+      });
       leftNode.group.append('svg:circle')
         .attr('id', leftNode.code + '--circle:' + childIndex)
         .attr('r', keySize / 8)
@@ -683,7 +352,10 @@ var insertValue = async (value) => {
     /** ********* move elements over to the right group and draw circles ******** **/
     rightChildren.forEach((child, childIndex) => {
       child.parent = rightNode;
-      rightNode.group.append(child.group.remove());
+      var removed = child.group.remove();
+      rightNode.group.append(() => {
+        return removed.node();
+      });
       rightNode.group.append('svg:circle')
         .attr('id', rightNode.code + '--circle:' + childIndex)
         .attr('r', keySize / 8)
@@ -717,25 +389,27 @@ var insertValue = async (value) => {
           redraw(matrix, depth);
         });
     });
-    /** ********* draw the new paths ******** **/
 
     /** ********* put the promoted key into the parent node ******** **/
     var parentNode = thisNode.parent;
     // find the index of insertion
     var insertIndex = 0;
-    for (; insertIndex < this.values.length; insertIndex++) {
+    for (; insertIndex < parentNode.values.length; insertIndex++) {
       if (promoteValue < parentNode.values[insertIndex]) break;
     }
 
     // insert the value into data
     parentNode.values.splice(insertIndex, 0, promoteValue);
 
+    var leftNodeChildIndex = -1;
     /** ********* reinject the parent's children ******** **/
     for (var i = 0; i < parentNode.children.length; i++) {
       if (parentNode.children[i].code == thisNode.code) {
         parentNode.children.splice(i, 1);
         parentNode.children.splice(i, 0, rightNode);
         parentNode.children.splice(i, 0, leftNode);
+
+        leftNodeChildIndex = i;
         break;
       }
     }
@@ -748,6 +422,52 @@ var insertValue = async (value) => {
     d3.select('[id="' + oldParentNodeCode + '"]')
       .attr('id', parentNode.code);
 
+    // update the ids of the circles of the parent
+    for (var i = 0; i <= insertIndex; i++) {
+      d3.select('[id="' + oldParentNodeCode + '--circle:' + i + '"]')
+        .attr('id', parentNode.code + '--circle:' + i);
+    }
+
+    for (var i = parentNode.children.length - 1; i > insertIndex; i--) {
+      d3.select('[id="' + oldParentNodeCode + '--circle:' + i + '"]')
+        .attr('id', parentNode.code + '--circle:' + (i + 1));
+    }
+
+    // insert one new circle because split introduces a new child
+    var circle = parentGroup.append('svg:circle')
+      .attr('id', parentNode.code + '--circle:' + (insertIndex + 1))
+      .attr('r', keySize / 8)
+      .attr('cy', (matrixDepth) * 128 + keySize)
+      .attr('cx', parseInt(promoteKeyRect.attr('x')) + keySize)
+      .attr('fill', 'steelblue')
+      .attr('stroke', 'steelblue')
+      .attr('stroke-width', 4)
+      .on('click', () => {
+        if (!acceptingUserInput) return;
+        var child = parentNode.children[insertIndex + 1]
+        if (child.expanded) {
+          child.expanded = false;
+          d3.select('[id="' + getNodeCode(child) + '"]')
+            .transition()
+            .style('opacity', 0)
+            .duration(300);
+
+          circle.transition()
+            .style('fill', 'white')
+            .duration(300);
+        } else {
+          child.expanded = true;
+          d3.select('[id="' + getNodeCode(child) + '"]')
+            .transition()
+            .style('opacity', 1)
+            .duration(300);
+
+          circle.transition()
+            .style('fill', 'steelblue')
+            .duration(300);
+        }
+      });
+
     // update the id's of the rects and texts of the node w/ the new nodecode
     // update keys from 0 to point of insertion
     for (var i = 0; i < insertIndex; i++) {
@@ -758,28 +478,117 @@ var insertValue = async (value) => {
         .attr('id', parentNode.code + '--text:' + i);
     }
 
-    parentGroup.append(promoteKeyRect.remove());
-    parentGroup.append(promoteKeyText.remove());
+    // shift the keyIndex's of these rect's and text's up by one to make space for new key
+    // also update the id nodecodes in the process
+    for (var keyIndex = parentNode.values.length - 1; keyIndex >= insertIndex; keyIndex--) {
+      d3.select('[id="' + oldParentNodeCode + '--rect:' + keyIndex + '"]')
+        .attr('id', parentNode.code + '--rect:' + (keyIndex + 1));
 
-    promoteKeyRect.attr('[id="' + thisNode.parent.code + '--rect:' + )
+      d3.select('[id="' + oldParentNodeCode + '--text:' + keyIndex + '"]')
+        .attr('id', parentNode.code + '--text:' + (keyIndex + 1));
+    }
+
+    // update nodecode and id of parent's path
+    d3.select('[id="' + oldParentNodeCode + '--path"]')
+      .attr('id', parentNode.code + '--path');
+    
+    // update nodecode and id of parent's parent's group, path, keys, and circles if necessary
+    if (parentNode.parent) {
+      var parentParentCode = getNodeCode(parentNode.parent);
+      d3.select('[id="' + parentNode.parent.code + '--path"]')
+        .attr('id', parentParentCode + '--path');
+      
+      parentNode.parent.values.forEach((value, index) => {
+        d3.select('[id="' + parentNode.parent.code + '--rect:' + index + '"]')
+        .attr('id', parentParentCode + '--rect:' + index);
+
+        d3.select('[id="' + parentNode.parent.code + '--text:' + index + '"]')
+          .attr('id', parentParentCode + '--text:' + index);
+
+        d3.select('[id="' + parentNode.parent.code + '--circle:' + index + '"]')
+          .attr('id', parentParentCode + '--circle:' + index);
+      });
+
+      d3.select('[id="' + parentNode.parent.code + '--circle:' + parentNode.parent.values.length + '"]')
+        .attr('id', parentParentCode + '--circle:' + parentNode.parent.values.length);
+
+      parentNode.parent.code = parentParentCode;
+      parentNode.parent.group.attr('id', parentNode.parent.code);
+    }
+
+    var promotedRect = parentGroup.append('svg:rect')
+      .attr('height', keySize)
+      .attr('width', keySize)
+      .attr('x', parseInt(promoteKeyRect.attr('x')))
+      .attr('y', parseInt(promoteKeyRect.attr('y')))
+      .attr('fill', 'white')
+      .attr('stroke', 'steelblue')
+      .attr('stroke-width', 4)
+      .attr('id', parentNode.code + '--rect:' + insertIndex);
+
+    var promotedText = parentGroup.append('svg:text')
+      .attr('x', parseInt(promoteKeyText.attr('x')))
+      .attr('y', parseInt(promoteKeyText.attr('y')))
+      .attr('font-family', 'Sofia Pro')
+      .attr('font-size', 24)
+      .attr('fill', 'black')
+      .attr('stroke', 'black')
+      .style('text-anchor', 'middle')
+      .attr('id', parentNode.code + '--text:' + insertIndex)
+      .text(() => { return promoteValue; });
+
+    /** ********* draw the new paths ******** **/
+    var y2ReferenceIndex = insertIndex == 0 ? 1 : 0;
+    // draw the path from leftNode to parentNode
+    var leftNodeX1 = leftNodeX + (keySize * leftNode.values.length / 2);
+    var leftNodeY1 = (128 * (matrixDepth + 1));
+    var leftNodeX2 = parseInt(d3.select('[id="' + parentNode.code + '--circle:' + leftNodeChildIndex + '"]').attr('cx'));
+    var y2 = keySize + parseInt(d3.select('[id="' + parentNode.code + '--rect:' + y2ReferenceIndex + '"]').attr('y'));
+    var leftNodePathString = 'M' + leftNodeX1 + ' ' + leftNodeY1 + ' C ' + leftNodeX1 + ' ' + (leftNodeY1 - keySize * 1.5) + ', ' + leftNodeX2 + ' ' + (y2 + keySize * 1.5) + ', ' + leftNodeX2 + ' ' + y2;
+    leftNode.group.append('svg:path')
+      .attr('id', leftNode.code + '--path')
+      .attr('fill', 'transparent')
+      .attr('stroke', 'steelblue')
+      .attr('stroke-width', 2)
+      .attr('d', leftNodePathString);
+      
+    // draw the path from rightNode to parentNode
+    var rightNodeX1 = rightNodeX + (keySize * rightNode.values.length / 2);
+    var rightNodeY1 = (128 * (matrixDepth + 1));
+    var rightNodeX2 = parseInt(d3.select('[id="' + parentNode.code + '--circle:' + (leftNodeChildIndex + 1) + '"]').attr('cx'));
+    var rightNodePathString = 'M' + rightNodeX1 + ' ' + rightNodeY1 + ' C ' + rightNodeX1 + ' ' + (rightNodeY1 - keySize * 1.5) + ', ' + rightNodeX2 + ' ' + (y2 + keySize * 1.5) + ', ' + rightNodeX2 + ' ' + y2;
+    rightNode.group.append('svg:path')
+      .attr('id', rightNode.code + '--path')
+      .attr('fill', 'transparent')
+      .attr('stroke', 'steelblue')
+      .attr('stroke-width', 2)
+      .attr('d', rightNodePathString);
 
     /** ********* destroy the old group ******** **/
-    thisNode.group.transition()
-      .style('opacity', 0)
-      .duration(300);
-    await sleep(500);
-
     thisNode.group.remove();
+    console.log('inserting split nodes into level ' + matrixDepth);
     matrix[matrixDepth].splice(thisNodeMatrixIndex, 1);
     matrix[matrixDepth].splice(thisNodeMatrixIndex, 0, rightNode);
     matrix[matrixDepth].splice(thisNodeMatrixIndex, 0, leftNode);
 
+    // animate new key y attr up by 128
+    promotedText.transition()
+      .attr('y', parseInt(promotedText.attr('y')) - 128)
+      .duration(300);
+
+    promotedRect.transition()
+      .attr('y', parseInt(promotedRect.attr('y')) - 128)
+      .duration(300);
+
+    await sleep(300);
+
     /** ********* redraw the entire thing ******** **/
     redraw(matrix, 0);
     
-
     // set thisNode pointer to the parent
     thisNode = thisNode.parent;
+
+    await sleep(1000);
   }
 
   acceptingUserInput = true;
