@@ -30,7 +30,7 @@ var matrix = [];
 /**
  * Reads the json data from file input
  */
-d3.json('data-btree-3.json', (data) => {
+d3.json('data-btree-3.2.json', (data) => {
   maxKeys = data.maxKeys;
   // inject parent data
   injectParent(data.root);

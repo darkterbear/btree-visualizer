@@ -158,10 +158,8 @@ const redraw = (matrix, depth) => {
       // redraw the node's children circles
       node.children.forEach((child, childIndex, children) => {
         // instead of directly modifying the circle, first REDRAW it so it appears on top of the key
-        console.log(nodeCode + ' ' + node.code);
         var circle = d3.select('[id="' + nodeCode + '--circle:' + childIndex + '"]');
-        console.log(circle);
-
+        if (child.code == 78) console.log('IM 78');
         var newCircle = node.group.append('svg:circle')
           .attr('id', nodeCode + '--circle:' + childIndex)
           .attr('cx', parseInt(circle.attr('cx')))
