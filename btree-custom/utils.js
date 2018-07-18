@@ -1,13 +1,13 @@
 const accumulator = (a, b) => parseInt(a) + parseInt(b);
 
-// TODO: need a way to derive a way to get a unique code for every node based on data in itself and its children
-const getNodeCode = (node) => {
-  var nodeCode = '-' + node.values.reduce(accumulator);
-  node.children.forEach((child) => {
-    nodeCode += '-' + child.values.reduce(accumulator);
-  });
+const makeid = () => {
+  var text = "";
+  var possible = "abcdef0123456789";
 
-  return nodeCode.substring(1);
+  for (var i = 0; i < 16; i++)
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+  return text;
 }
 
 const injectParent = (node) => {
@@ -16,7 +16,7 @@ const injectParent = (node) => {
     child.parent = node;
     injectParent(child);
   });
-  node.code = getNodeCode(node);
+  node.code = makeid();
 }
 
 /**
@@ -72,7 +72,7 @@ const getChildIndex = (node) => {
 const collapseAll = (node) => {
   node.children.forEach((child, index) => {
     child.expanded = false;
-    var nodeCode = getNodeCode(child);
+    var nodeCode = child.code;
     d3.select('[id="' + nodeCode + '"]')
       .transition()
       .style('opacity', 0)

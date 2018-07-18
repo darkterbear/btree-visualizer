@@ -95,7 +95,7 @@ const draw = (matrix) => {
             if (!acceptingUserInput) return;
             if (child.expanded) {
               child.expanded = false;
-              d3.select('[id="' + getNodeCode(child) + '"]')
+              d3.select('[id="' + child.code + '"]')
                 .transition()
                 .style('opacity', 0)
                 .duration(300);
@@ -105,7 +105,7 @@ const draw = (matrix) => {
                 .duration(300);
             } else {
               child.expanded = true;
-              d3.select('[id="' + getNodeCode(child) + '"]')
+              d3.select('[id="' + child.code + '"]')
                 .transition()
                 .style('opacity', 1)
                 .duration(300);
@@ -141,7 +141,7 @@ const redraw = (matrix, depth) => {
       renderIndex++;
 
       // redraw the node
-      var nodeCode = getNodeCode(node);
+      var nodeCode = node.code;
       node.values.forEach((key, keyIndex, keys) => {
         d3.select('[id="' + nodeCode + '--rect:' + keyIndex + '"]')
           .transition()
@@ -159,7 +159,6 @@ const redraw = (matrix, depth) => {
       node.children.forEach((child, childIndex, children) => {
         // instead of directly modifying the circle, first REDRAW it so it appears on top of the key
         var circle = d3.select('[id="' + nodeCode + '--circle:' + childIndex + '"]');
-        if (child.code == 78) console.log('IM 78');
         var newCircle = node.group.append('svg:circle')
           .attr('id', nodeCode + '--circle:' + childIndex)
           .attr('cx', parseInt(circle.attr('cx')))
@@ -172,7 +171,7 @@ const redraw = (matrix, depth) => {
             if (!acceptingUserInput) return;
             if (child.expanded) {
               child.expanded = false;
-              d3.select('[id="' + getNodeCode(child) + '"]')
+              d3.select('[id="' + child.code + '"]')
                 .transition()
                 .style('opacity', 0)
                 .duration(300);
@@ -182,7 +181,7 @@ const redraw = (matrix, depth) => {
                 .duration(300);
             } else {
               child.expanded = true;
-              d3.select('[id="' + getNodeCode(child) + '"]')
+              d3.select('[id="' + child.code + '"]')
                 .transition()
                 .style('opacity', 1)
                 .duration(300);

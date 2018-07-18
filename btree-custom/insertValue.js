@@ -8,7 +8,7 @@ const insertValue = async (value) => {
   // collapse the entire tree
   var root = matrix[0][0];
   collapseAll(root);
-  var rootNodeCode = getNodeCode(root);
+  var rootNodeCode = root.code;
   root.children.forEach((child, index) => {
     d3.select('[id="' + rootNodeCode + '--circle:' + index)
       .transition()
@@ -68,7 +68,7 @@ const insertValue = async (value) => {
     
     // expand this child
     child.expanded = true;
-    var nodeCode = getNodeCode(child);
+    var nodeCode = child.code;
     d3.select('[id="' + nodeCode + '"]')
       .transition()
       .style('opacity', 1)
@@ -95,7 +95,7 @@ const insertValue = async (value) => {
 
   // thisNode is now the correct leaf node
   // insert the new value into this leaf node
-  var thisNodeCode = getNodeCode(thisNode);
+  var thisNodeCode = thisNode.code;
   var thisNodeGroup = d3.select('[id="' + thisNodeCode + '"]');
 
   // find the index of insertion
@@ -109,59 +109,14 @@ const insertValue = async (value) => {
   // insert the new value into the leaf node
   thisNode.values.splice(index, 0, value);
 
-  // calculate the new nodecode
-  var newNodeCode = getNodeCode(thisNode);
-
-  // update the nodecode of the node's group element
-  d3.select('[id="' + thisNodeCode + '"]')
-    .attr('id', newNodeCode);
-
-  // update the id's of the rects and texts of the node w/ the new nodecode
-  // update keys from 0 to point of insertion
-  for (var i = 0; i < index; i++) { 
-    d3.select('[id="' + thisNodeCode + '--rect:' + i + '"]')
-      .attr('id', newNodeCode + '--rect:' + i);
-
-    d3.select('[id="' + thisNodeCode + '--text:' + i + '"]')
-      .attr('id', newNodeCode + '--text:' + i);
-  }
-
   // shift the keyIndex's of these rect's and text's up by one to make space for new key
-  // also update the id nodecodes in the process
   for (var keyIndex = oldMaxIndex; keyIndex >= index; keyIndex--) {
     d3.select('[id="' + thisNodeCode + '--rect:' + keyIndex + '"]')
-      .attr('id', newNodeCode + '--rect:' + (keyIndex + 1));
+      .attr('id', thisNodeCode + '--rect:' + (keyIndex + 1));
 
     d3.select('[id="' + thisNodeCode + '--text:' + keyIndex + '"]')
-      .attr('id', newNodeCode + '--text:' + (keyIndex + 1));
+      .attr('id', thisNodeCode + '--text:' + (keyIndex + 1));
   }
-
-  // update nodecode and id of path
-  thisNode.code = newNodeCode;
-  d3.select('[id="' + thisNodeCode + '--path"]')
-    .attr('id', newNodeCode + '--path');
-
-  // update nodecode and id of parent group, path, keys, and circles
-  var newParentCode = getNodeCode(thisNode.parent);
-  d3.select('[id="' + thisNode.parent.code + '--path"]')
-    .attr('id', newParentCode + '--path');
-
-  thisNode.parent.values.forEach((value, index) => {
-    d3.select('[id="' + thisNode.parent.code + '--rect:' + index + '"]')
-      .attr('id', newParentCode + '--rect:' + index);
-
-    d3.select('[id="' + thisNode.parent.code + '--text:' + index + '"]')
-      .attr('id', newParentCode + '--text:' + index);
-
-    d3.select('[id="' + thisNode.parent.code + '--circle:' + index + '"]')
-      .attr('id', newParentCode + '--circle:' + index);
-  });
-
-  d3.select('[id="' + thisNode.parent.code + '--circle:' + thisNode.parent.values.length + '"]')
-    .attr('id', newParentCode + '--circle:' + thisNode.parent.values.length);
-
-  thisNode.parent.code = newParentCode;
-  thisNode.parent.group.attr('id', thisNode.parent.code);
 
   // insert the new rect element
   thisNodeGroup.append('svg:rect')
@@ -173,11 +128,11 @@ const insertValue = async (value) => {
     .attr('stroke', 'steelblue')
     //.attr('stroke', 'limegreen')
     .attr('stroke-width', 4)
-    .attr('id', newNodeCode + '--rect:' + index);
+    .attr('id', thisNodeCode + '--rect:' + index);
 
   // insert the new text element
   thisNodeGroup.append('svg:text')
-    .attr('id', newNodeCode + '--text:' + index)
+    .attr('id', thisNodeCode + '--text:' + index)
     .attr('x', parseInt(text.attr('x')))
     .attr('y', parseInt(text.attr('y')))
     .attr('font-family', 'Sofia Pro')
@@ -208,7 +163,6 @@ const insertValue = async (value) => {
     for (; thisNodeMatrixIndex < matrix[matrixDepth].length; thisNodeMatrixIndex++) {
       if (matrix[matrixDepth][thisNodeMatrixIndex].code == thisNode.code) break;
     }
-    console.log(thisNodeMatrixIndex);
 
     // find promote value
     var promoteIndex = Math.floor(maxKeys / 2);
@@ -238,7 +192,7 @@ const insertValue = async (value) => {
       children: leftChildren,
       parent: thisNode.parent
     }
-    leftNode.code = getNodeCode(leftNode);
+    leftNode.code = makeid();
 
     var rightNode = {
       expanded: true,
@@ -246,7 +200,7 @@ const insertValue = async (value) => {
       children: rightChildren,
       parent: thisNode.parent
     }
-    rightNode.code = getNodeCode(rightNode);
+    rightNode.code = makeid();
 
     /** ********* create the left group ******** **/
     leftNode.group = parentGroup.append('svg:g')
@@ -325,7 +279,7 @@ const insertValue = async (value) => {
           if (!acceptingUserInput) return;
           if (child.expanded) {
             child.expanded = false;
-            d3.select('[id="' + getNodeCode(child) + '"]')
+            d3.select('[id="' + child.code + '"]')
               .transition()
               .style('opacity', 0)
               .duration(300);
@@ -335,7 +289,7 @@ const insertValue = async (value) => {
               .duration(300);
           } else {
             child.expanded = true;
-            d3.select('[id="' + getNodeCode(child) + '"]')
+            d3.select('[id="' + child.code + '"]')
               .transition()
               .style('opacity', 1)
               .duration(300);
@@ -366,7 +320,7 @@ const insertValue = async (value) => {
           if (!acceptingUserInput) return;
           if (child.expanded) {
             child.expanded = false;
-            d3.select('[id="' + getNodeCode(child) + '"]')
+            d3.select('[id="' + child.code + '"]')
               .transition()
               .style('opacity', 0)
               .duration(300);
@@ -376,7 +330,7 @@ const insertValue = async (value) => {
               .duration(300);
           } else {
             child.expanded = true;
-            d3.select('[id="' + getNodeCode(child) + '"]')
+            d3.select('[id="' + child.code + '"]')
               .transition()
               .style('opacity', 1)
               .duration(300);
@@ -414,22 +368,8 @@ const insertValue = async (value) => {
       }
     }
 
-    /** ********* recalculate the parent's nodecode ******** **/
-    var oldParentNodeCode = parentNode.code;
-    parentNode.code = getNodeCode(parentNode);
-
-    // update the nodecode of the parent's group element
-    d3.select('[id="' + oldParentNodeCode + '"]')
-      .attr('id', parentNode.code);
-
-    // update the ids of the circles of the parent
-    for (var i = 0; i <= insertIndex; i++) {
-      d3.select('[id="' + oldParentNodeCode + '--circle:' + i + '"]')
-        .attr('id', parentNode.code + '--circle:' + i);
-    }
-
     for (var i = parentNode.children.length - 1; i > insertIndex; i--) {
-      d3.select('[id="' + oldParentNodeCode + '--circle:' + i + '"]')
+      d3.select('[id="' + parentNode.code + '--circle:' + i + '"]')
         .attr('id', parentNode.code + '--circle:' + (i + 1));
     }
 
@@ -447,7 +387,7 @@ const insertValue = async (value) => {
         var child = parentNode.children[insertIndex + 1]
         if (child.expanded) {
           child.expanded = false;
-          d3.select('[id="' + getNodeCode(child) + '"]')
+          d3.select('[id="' + child.code + '"]')
             .transition()
             .style('opacity', 0)
             .duration(300);
@@ -457,7 +397,7 @@ const insertValue = async (value) => {
             .duration(300);
         } else {
           child.expanded = true;
-          d3.select('[id="' + getNodeCode(child) + '"]')
+          d3.select('[id="' + child.code + '"]')
             .transition()
             .style('opacity', 1)
             .duration(300);
@@ -468,52 +408,14 @@ const insertValue = async (value) => {
         }
       });
 
-    // update the id's of the rects and texts of the node w/ the new nodecode
-    // update keys from 0 to point of insertion
-    for (var i = 0; i < insertIndex; i++) {
-      d3.select('[id="' + oldParentNodeCode + '--rect:' + i + '"]')
-        .attr('id', parentNode.code + '--rect:' + i);
-
-      d3.select('[id="' + oldParentNodeCode + '--text:' + i + '"]')
-        .attr('id', parentNode.code + '--text:' + i);
-    }
-
     // shift the keyIndex's of these rect's and text's up by one to make space for new key
     // also update the id nodecodes in the process
     for (var keyIndex = parentNode.values.length - 1; keyIndex >= insertIndex; keyIndex--) {
-      d3.select('[id="' + oldParentNodeCode + '--rect:' + keyIndex + '"]')
+      d3.select('[id="' + parentNode.code + '--rect:' + keyIndex + '"]')
         .attr('id', parentNode.code + '--rect:' + (keyIndex + 1));
 
-      d3.select('[id="' + oldParentNodeCode + '--text:' + keyIndex + '"]')
+      d3.select('[id="' + parentNode.code + '--text:' + keyIndex + '"]')
         .attr('id', parentNode.code + '--text:' + (keyIndex + 1));
-    }
-
-    // update nodecode and id of parent's path
-    d3.select('[id="' + oldParentNodeCode + '--path"]')
-      .attr('id', parentNode.code + '--path');
-    
-    // update nodecode and id of parent's parent's group, path, keys, and circles if necessary
-    if (parentNode.parent) {
-      var parentParentCode = getNodeCode(parentNode.parent);
-      d3.select('[id="' + parentNode.parent.code + '--path"]')
-        .attr('id', parentParentCode + '--path');
-      
-      parentNode.parent.values.forEach((value, index) => {
-        d3.select('[id="' + parentNode.parent.code + '--rect:' + index + '"]')
-        .attr('id', parentParentCode + '--rect:' + index);
-
-        d3.select('[id="' + parentNode.parent.code + '--text:' + index + '"]')
-          .attr('id', parentParentCode + '--text:' + index);
-
-        d3.select('[id="' + parentNode.parent.code + '--circle:' + index + '"]')
-          .attr('id', parentParentCode + '--circle:' + index);
-      });
-
-      d3.select('[id="' + parentNode.parent.code + '--circle:' + parentNode.parent.values.length + '"]')
-        .attr('id', parentParentCode + '--circle:' + parentNode.parent.values.length);
-
-      parentNode.parent.code = parentParentCode;
-      parentNode.parent.group.attr('id', parentNode.parent.code);
     }
 
     var promotedRect = parentGroup.append('svg:rect')
