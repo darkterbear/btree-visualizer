@@ -1,20 +1,40 @@
 {
-  "maxKeys": 5,
+  "maxKeys": 2,
   "root": {
     "expanded": true,
-    "values": [16, 23],
+    "values": [16],
     "children": [{
       "expanded": false,
       "values": [4, 8],
-      "children": []
+      "children": [{
+        "expanded": false,
+        "values": [1, 2],
+        "children": []
+      }, {
+        "expanded": false,
+        "values": [5, 7],
+        "children": []
+      }, {
+        "expanded": false,
+        "values": [9, 10],
+        "children": []
+      }]
     }, {
       "expanded": false,
-      "values": [20, 22],
-      "children": []
-    }, {
-      "expanded": false,
-      "values": [24, 28],
-      "children": []
+      "values": [19, 22],
+      "children": [{
+        "expanded": false,
+        "values": [17, 18],
+        "children": []
+      }, {
+        "expanded": false,
+        "values": [20, 21],
+        "children": []
+      }, {
+        "expanded": false,
+        "values": [23, 24],
+        "children": []
+      }]
     }]
   }
 }

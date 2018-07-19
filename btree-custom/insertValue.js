@@ -85,7 +85,7 @@ const insertValue = async (value) => {
       .duration(300);
 
     // redraw the matrix
-    redraw(matrix, 0);
+    redraw(matrix);
 
     // set thisNode to child
     thisNode = child;
@@ -150,7 +150,7 @@ const insertValue = async (value) => {
   text.remove();
 
   // redraw to animate the insertion
-  redraw(matrix, 0);
+  redraw(matrix);
 
   await sleep(300);
 
@@ -272,6 +272,8 @@ const insertValue = async (value) => {
       leftNode.group.append('svg:circle')
         .attr('id', leftNode.code + '--circle:' + childIndex)
         .attr('r', keySize / 8)
+        .attr('cx', leftNodeX + keySize * childIndex)
+        .attr('cy', 128 * (matrixDepth + 1) + keySize)
         .attr('fill', child.expanded ? 'steelblue' : 'white')
         .attr('stroke', 'steelblue')
         .attr('stroke-width', 4)
@@ -299,7 +301,7 @@ const insertValue = async (value) => {
               .duration(300);
           }
 
-          redraw(matrix, depth);
+          redraw(matrix);
         });
     });
 
@@ -313,6 +315,8 @@ const insertValue = async (value) => {
       rightNode.group.append('svg:circle')
         .attr('id', rightNode.code + '--circle:' + childIndex)
         .attr('r', keySize / 8)
+        .attr('cx', rightNodeX + keySize * childIndex)
+        .attr('cy', 128 * (matrixDepth + 1) + keySize)
         .attr('fill', child.expanded ? 'steelblue' : 'white')
         .attr('stroke', 'steelblue')
         .attr('stroke-width', 4)
@@ -340,7 +344,7 @@ const insertValue = async (value) => {
               .duration(300);
           }
 
-          redraw(matrix, depth);
+          redraw(matrix);
         });
     });
 
@@ -485,12 +489,15 @@ const insertValue = async (value) => {
     await sleep(300);
 
     /** ********* redraw the entire thing ******** **/
-    redraw(matrix, 0);
+    console.log('redrawn after split promote');
+    redraw(matrix);
     
     // set thisNode pointer to the parent
     thisNode = thisNode.parent;
+    matrixDepth--;
 
     await sleep(1000);
+    //break;
   }
 
   acceptingUserInput = true;

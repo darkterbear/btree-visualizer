@@ -115,7 +115,7 @@ const draw = (matrix) => {
                 .duration(300);
             }
 
-            redraw(matrix, depth);
+            redraw(matrix);
           });
       });
 
@@ -124,7 +124,7 @@ const draw = (matrix) => {
   });
 }
 
-const redraw = (matrix, depth) => {
+const redraw = (matrix) => {
   matrix.forEach((row, depth, matrix) => {
     var y = (depth + 1) * 128;
 
@@ -156,6 +156,7 @@ const redraw = (matrix, depth) => {
 
 
       // redraw the node's children circles
+      console.log(node.children);
       node.children.forEach((child, childIndex, children) => {
         // instead of directly modifying the circle, first REDRAW it so it appears on top of the key
         var circle = d3.select('[id="' + nodeCode + '--circle:' + childIndex + '"]');
@@ -191,7 +192,7 @@ const redraw = (matrix, depth) => {
                 .duration(300);
             }
 
-            redraw(matrix, depth);
+            redraw(matrix);
           });
 
         newCircle.transition()
