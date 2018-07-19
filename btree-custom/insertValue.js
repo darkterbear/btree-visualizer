@@ -348,8 +348,40 @@ const insertValue = async (value) => {
         });
     });
 
+    // TODO: handle root split and promotes
+    /**
+     * 1. matrix needs to be modified, push empty node to matrix[0]
+     */
+    
     /** ********* put the promoted key into the parent node ******** **/
     var parentNode = thisNode.parent;
+
+    if (!parentNode) { // handling a root split
+      var newRootNode = {
+        expanded: true,
+        children: [thisNode],
+        values: [],
+        code: makeid(),
+        parent: null
+      };
+      parentNode = newRootNode;
+      matrix.splice(0, 0, [newRootNode]);
+
+      // give this new root a group
+      parentNode.group = svg.append('svg:g')
+        .attr('id', parentNode.code);
+
+      // move everything into this group
+      var removed = d3.select('[id="' + thisNode.code + '"]').remove();
+      parentNode.group.append(() => {
+        return removed.node();
+      });
+      
+      // give the new root a circle
+
+      // give the former root a path to the new root
+    }
+
     // find the index of insertion
     var insertIndex = 0;
     for (; insertIndex < parentNode.values.length; insertIndex++) {
@@ -448,8 +480,11 @@ const insertValue = async (value) => {
     // draw the path from leftNode to parentNode
     var leftNodeX1 = leftNodeX + (keySize * leftNode.values.length / 2);
     var leftNodeY1 = (128 * (matrixDepth + 1));
-    var leftNodeX2 = parseInt(d3.select('[id="' + parentNode.code + '--circle:' + leftNodeChildIndex + '"]').attr('cx'));
-    var y2 = keySize + parseInt(d3.select('[id="' + parentNode.code + '--rect:' + y2ReferenceIndex + '"]').attr('y'));
+
+    var parentLeftNodeCircle = d3.select('[id="' + parentNode.code + '--circle:' + leftNodeChildIndex + '"]');
+    var leftNodeX2 = parentLeftNodeCircle.empty() ? (parseInt(d3.select('[id="' + thisNode.code + '--circle:0').attr('cx')) + thisNode.values.length * keySize / 2) : parseInt(parentLeftNodeCircle.attr('cx'));
+    var parentRect = d3.select('[id="' + parentNode.code + '--rect:' + y2ReferenceIndex + '"]');
+    var y2 = parentRect.empty() ? 128 + keySize : keySize + parseInt(parentRect.attr('y'));
     var leftNodePathString = 'M' + leftNodeX1 + ' ' + leftNodeY1 + ' C ' + leftNodeX1 + ' ' + (leftNodeY1 - keySize * 1.5) + ', ' + leftNodeX2 + ' ' + (y2 + keySize * 1.5) + ', ' + leftNodeX2 + ' ' + y2;
     leftNode.group.append('svg:path')
       .attr('id', leftNode.code + '--path')
