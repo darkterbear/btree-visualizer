@@ -184,7 +184,98 @@ const insertValue = async (value) => {
     var leftChildren = thisNode.children.slice(0, promoteIndex + 1);
     var rightChildren = thisNode.children.slice(promoteIndex + 1, thisNode.children.length);
 
-    var parentGroup = thisNode.parent ? thisNode.parent.group : svg; // attach the split node groups to the parent group element; if this is root (parent is null), attach to svg
+    // TODO: handle root split and promotes
+    /**
+     * 1. matrix needs to be modified, push empty node to matrix[0]
+     */
+
+    /** ********* put the promoted key into the parent node ******** **/
+    var parentNode = thisNode.parent;
+
+    if (!parentNode) { // handling a root split
+      parentNode = {
+        expanded: true,
+        children: [thisNode],
+        values: [],
+        code: makeid(),
+        parent: null
+      };
+
+      console.log('old root code: ' + thisNode.code);
+      console.log('new root code: ' + parentNode.code);
+      console.log('matrix before:');
+      console.log(matrix);
+      matrix.splice(0, 0, [parentNode]);
+      matrixDepth++;
+      console.log('matrix after:');
+      console.log(matrix);
+      thisNode.parent = parentNode;
+
+      // give this new root a group
+      parentNode.group = svg.append('svg:g')
+        .attr('id', parentNode.code);
+
+      // remove the old root group
+      // var oldRootClone = clone('[id="' + thisNode.code + '"]');
+
+      var removed = thisNode.group.remove();
+
+      // move everything into the new group
+      parentNode.group.append(() => {
+        return removed.node();
+      });
+
+      // give the new root a circle
+      var circle = parentNode.group.append('svg:circle')
+        .attr('id', parentNode.code + '--circle:0')
+        .attr('cx', (parseInt(d3.select('[id="' + thisNode.code + '--circle:0').attr('cx')) - keySize / 2 + thisNode.values.length * keySize / 2))
+        .attr('cy', keySize)
+        .attr('r', keySize / 8)
+        .attr('fill', thisNode.expanded ? 'steelblue' : white)
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 4)
+        .on('click', () => {
+          if (!acceptingUserInput) return;
+          if (thisNode.expanded) {
+            thisNode.expanded = false;
+            d3.select('[id="' + thisNode.code + '"]')
+              .transition()
+              .style('opacity', 0)
+              .duration(300);
+
+            circle.transition()
+              .style('fill', 'white')
+              .duration(300);
+          } else {
+            thisNode.expanded = true;
+            d3.select('[id="' + thisNode.code + '"]')
+              .transition()
+              .style('opacity', 1)
+              .duration(300);
+
+            circle.transition()
+              .style('fill', 'steelblue')
+              .duration(300);
+          }
+
+          redraw(matrix);
+        })
+
+      // give the former root a path to the new root
+      var x1 = 0;
+      var x2 = 0;
+      var y1 = 0;
+      var y2 = 0;
+      var pathString = 'M' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + (y1 - keySize * 1.5) + ', ' + x2 + ' ' + (y2 + keySize * 1.5) + ', ' + x2 + ' ' + y2;
+      thisNode.group.append('svg:path')
+        .attr('id', thisNode.code + '--path')
+        .attr('fill', 'transparent')
+        .attr('stroke', 'steelblue')
+        .attr('stroke-width', 2)
+        .attr('d', pathString);
+    }
+    
+    var parentGroup = thisNode.parent.group; // attach the split node groups to the parent group element
 
     var leftNode = {
       expanded: true,
@@ -348,40 +439,6 @@ const insertValue = async (value) => {
         });
     });
 
-    // TODO: handle root split and promotes
-    /**
-     * 1. matrix needs to be modified, push empty node to matrix[0]
-     */
-    
-    /** ********* put the promoted key into the parent node ******** **/
-    var parentNode = thisNode.parent;
-
-    if (!parentNode) { // handling a root split
-      var newRootNode = {
-        expanded: true,
-        children: [thisNode],
-        values: [],
-        code: makeid(),
-        parent: null
-      };
-      parentNode = newRootNode;
-      matrix.splice(0, 0, [newRootNode]);
-
-      // give this new root a group
-      parentNode.group = svg.append('svg:g')
-        .attr('id', parentNode.code);
-
-      // move everything into this group
-      var removed = d3.select('[id="' + thisNode.code + '"]').remove();
-      parentNode.group.append(() => {
-        return removed.node();
-      });
-      
-      // give the new root a circle
-
-      // give the former root a path to the new root
-    }
-
     // find the index of insertion
     var insertIndex = 0;
     for (; insertIndex < parentNode.values.length; insertIndex++) {
@@ -482,7 +539,8 @@ const insertValue = async (value) => {
     var leftNodeY1 = (128 * (matrixDepth + 1));
 
     var parentLeftNodeCircle = d3.select('[id="' + parentNode.code + '--circle:' + leftNodeChildIndex + '"]');
-    var leftNodeX2 = parentLeftNodeCircle.empty() ? (parseInt(d3.select('[id="' + thisNode.code + '--circle:0').attr('cx')) + thisNode.values.length * keySize / 2) : parseInt(parentLeftNodeCircle.attr('cx'));
+    var leftNodeX2 = parseInt(parentLeftNodeCircle.attr("cx"));
+
     var parentRect = d3.select('[id="' + parentNode.code + '--rect:' + y2ReferenceIndex + '"]');
     var y2 = parentRect.empty() ? 128 + keySize : keySize + parseInt(parentRect.attr('y'));
     var leftNodePathString = 'M' + leftNodeX1 + ' ' + leftNodeY1 + ' C ' + leftNodeX1 + ' ' + (leftNodeY1 - keySize * 1.5) + ', ' + leftNodeX2 + ' ' + (y2 + keySize * 1.5) + ', ' + leftNodeX2 + ' ' + y2;
@@ -496,7 +554,10 @@ const insertValue = async (value) => {
     // draw the path from rightNode to parentNode
     var rightNodeX1 = rightNodeX + (keySize * rightNode.values.length / 2);
     var rightNodeY1 = (128 * (matrixDepth + 1));
-    var rightNodeX2 = parseInt(d3.select('[id="' + parentNode.code + '--circle:' + (leftNodeChildIndex + 1) + '"]').attr('cx'));
+
+    var parentRightNodeCircle = d3.select('[id="' + parentNode.code + "--circle:" + (leftNodeChildIndex + 1) + '"]');
+    var rightNodeX2 = parseInt(parentRightNodeCircle.attr("cx"));
+
     var rightNodePathString = 'M' + rightNodeX1 + ' ' + rightNodeY1 + ' C ' + rightNodeX1 + ' ' + (rightNodeY1 - keySize * 1.5) + ', ' + rightNodeX2 + ' ' + (y2 + keySize * 1.5) + ', ' + rightNodeX2 + ' ' + y2;
     rightNode.group.append('svg:path')
       .attr('id', rightNode.code + '--path')
@@ -507,7 +568,6 @@ const insertValue = async (value) => {
 
     /** ********* destroy the old group ******** **/
     thisNode.group.remove();
-    console.log('inserting split nodes into level ' + matrixDepth);
     matrix[matrixDepth].splice(thisNodeMatrixIndex, 1);
     matrix[matrixDepth].splice(thisNodeMatrixIndex, 0, rightNode);
     matrix[matrixDepth].splice(thisNodeMatrixIndex, 0, leftNode);
@@ -524,14 +584,13 @@ const insertValue = async (value) => {
     await sleep(300);
 
     /** ********* redraw the entire thing ******** **/
-    console.log('redrawn after split promote');
     redraw(matrix);
     
     // set thisNode pointer to the parent
     thisNode = thisNode.parent;
     matrixDepth--;
 
-    await sleep(1000);
+    await sleep(300);
     //break;
   }
 

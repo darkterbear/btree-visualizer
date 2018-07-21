@@ -20,9 +20,12 @@ const draw = (matrix) => {
 
       if (isNodeRendered) renderIndex++;
 
-      var attachDOM = svg;
+      var attachDOM; // = svg;
       if (node.parent != null) {
         attachDOM = node.parent.group.append('svg:g')
+          .attr('id', node.code);
+      } else {
+        attachDOM = svg.append('svg:g')
           .attr('id', node.code);
       }
 
@@ -146,19 +149,22 @@ const redraw = (matrix) => {
         d3.select('[id="' + nodeCode + '--rect:' + keyIndex + '"]')
           .transition()
           .attr('x', keySize * keyIndex + x)
+          .attr('y', y)
           .duration(300);
 
         d3.select('[id="' + nodeCode + '--text:' + keyIndex + '"]')
           .transition()
           .attr('x', keySize * (keyIndex + 0.5) + x)
+          .attr('y', y + keySize / 1.5)
           .duration(300);
       });
 
 
       // redraw the node's children circles
-      console.log(node.children);
       node.children.forEach((child, childIndex, children) => {
         // instead of directly modifying the circle, first REDRAW it so it appears on top of the key
+        console.log(depth + ' ' + index);
+        console.log('redrawing node circles; selector: ' + '[id="' + nodeCode + '--circle:' + childIndex + '"]');
         var circle = d3.select('[id="' + nodeCode + '--circle:' + childIndex + '"]');
         var newCircle = node.group.append('svg:circle')
           .attr('id', nodeCode + '--circle:' + childIndex)
@@ -195,15 +201,18 @@ const redraw = (matrix) => {
             redraw(matrix);
           });
 
-        newCircle.transition()
-          .attr('cx', x + (keySize * childIndex))
-          .style('fill', child.expanded ? 'steelblue' : 'white')
+        newCircle
+          .transition()
+          .attr("cx", x + keySize * childIndex)
+          .attr("cy", y + keySize)
+          .style("fill", child.expanded ? "steelblue" : "white")
           .duration(300);
 
         circle.remove();
 
         
         child.circleX = x + (keySize * childIndex);
+        if (!child.circleX) console.log('circleX is null: ' + x + ' ' + keySize + ' ' + childIndex);
       });
 
       // draw the line to the parent
@@ -215,6 +224,7 @@ const redraw = (matrix) => {
         var y2 = keySize + parseInt(d3.select('[id="' + node.parent.code + '--rect:' + 0 + '"]').attr('y'));
 
         var pathString = 'M' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + (y1 - keySize * 1.5) + ', ' + x2 + ' ' + (y2 + keySize * 1.5) + ', ' + x2 + ' ' + y2;
+        console.log('redraw path to parent: ' + pathString);
         d3.select('[id="' + node.code + '--path"]')
           .transition()
           .attr('d', pathString)

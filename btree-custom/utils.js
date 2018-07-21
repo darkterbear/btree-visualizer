@@ -69,6 +69,11 @@ const getChildIndex = (node) => {
   }
 }
 
+const clone = (selector) => {
+  var node = d3.select(selector).node();
+  return d3.select(node.parentNode.insertBefore(node.cloneNode(true), node.nextSibling));
+}
+
 const collapseAll = (node) => {
   node.children.forEach((child, index) => {
     child.expanded = false;
