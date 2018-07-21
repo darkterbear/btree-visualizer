@@ -191,6 +191,7 @@ const insertValue = async (value) => {
 
     /** ********* put the promoted key into the parent node ******** **/
     var parentNode = thisNode.parent;
+    var oldMatrixDepth = matrixDepth;
 
     if (!parentNode) { // handling a root split
       parentNode = {
@@ -259,20 +260,7 @@ const insertValue = async (value) => {
           }
 
           redraw(matrix);
-        })
-
-      // give the former root a path to the new root
-      var x1 = 0;
-      var x2 = 0;
-      var y1 = 0;
-      var y2 = 0;
-      var pathString = 'M' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + (y1 - keySize * 1.5) + ', ' + x2 + ' ' + (y2 + keySize * 1.5) + ', ' + x2 + ' ' + y2;
-      thisNode.group.append('svg:path')
-        .attr('id', thisNode.code + '--path')
-        .attr('fill', 'transparent')
-        .attr('stroke', 'steelblue')
-        .attr('stroke-width', 2)
-        .attr('d', pathString);
+        });
     }
     
     var parentGroup = thisNode.parent.group; // attach the split node groups to the parent group element
@@ -306,22 +294,23 @@ const insertValue = async (value) => {
       leftNode.group.append('svg:rect')
         .attr('id', leftNode.code + '--rect:' + index)
         .attr('x', leftNodeX + keySize * index)
-        .attr('y', 128 * (matrixDepth + 1))
+        .attr('y', 128 * (oldMatrixDepth + 1))
         .attr('height', keySize)
         .attr('width', keySize)
         .attr('fill', 'white')
         .attr('stroke', 'steelblue')
         .attr('stroke-width', 4);
 
-      leftNode.group.append('svg:text')
-        .attr('id', leftNode.code + '--text:' + index)
-        .attr('x', leftNodeX + keySize * (index + 0.5))
-        .attr('y', 128 * (matrixDepth + 1) + keySize / 1.5)
-        .attr('font-family', 'Sofia Pro')
-        .attr('font-size', 24)
-        .attr('fill', 'black')
-        .attr('stroke', 'black')
-        .style('text-anchor', 'middle')
+      leftNode.group
+        .append("svg:text")
+        .attr("id", leftNode.code + "--text:" + index)
+        .attr("x", leftNodeX + keySize * (index + 0.5))
+        .attr("y", 128 * (oldMatrixDepth + 1) + keySize / 1.5)
+        .attr("font-family", "Sofia Pro")
+        .attr("font-size", 24)
+        .attr("fill", "black")
+        .attr("stroke", "black")
+        .style("text-anchor", "middle")
         .text(() => {
           return value;
         });
@@ -329,25 +318,27 @@ const insertValue = async (value) => {
 
     /** ********* render the new rects and texts for right node ******** **/
     rightNode.values.forEach((value, index) => {
-      rightNode.group.append('svg:rect')
-        .attr('id', rightNode.code + '--rect:' + index)
-        .attr('x', rightNodeX + keySize * index)
-        .attr('y', 128 * (matrixDepth + 1))
-        .attr('height', keySize)
-        .attr('width', keySize)
-        .attr('fill', 'white')
-        .attr('stroke', 'steelblue')
-        .attr('stroke-width', 4);
+      rightNode.group
+        .append("svg:rect")
+        .attr("id", rightNode.code + "--rect:" + index)
+        .attr("x", rightNodeX + keySize * index)
+        .attr("y", 128 * (oldMatrixDepth + 1))
+        .attr("height", keySize)
+        .attr("width", keySize)
+        .attr("fill", "white")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 4);
 
-      rightNode.group.append('svg:text')
-        .attr('id', rightNode.code + '--text:' + index)
-        .attr('x', rightNodeX + keySize * (index + 0.5))
-        .attr('y', 128 * (matrixDepth + 1) + keySize / 1.5)
-        .attr('font-family', 'Sofia Pro')
-        .attr('font-size', 24)
-        .attr('fill', 'black')
-        .attr('stroke', 'black')
-        .style('text-anchor', 'middle')
+      rightNode.group
+        .append("svg:text")
+        .attr("id", rightNode.code + "--text:" + index)
+        .attr("x", rightNodeX + keySize * (index + 0.5))
+        .attr("y", 128 * (oldMatrixDepth + 1) + keySize / 1.5)
+        .attr("font-family", "Sofia Pro")
+        .attr("font-size", 24)
+        .attr("fill", "black")
+        .attr("stroke", "black")
+        .style("text-anchor", "middle")
         .text(() => {
           return value;
         });
@@ -360,35 +351,38 @@ const insertValue = async (value) => {
       leftNode.group.append(() => {
         return removed.node();
       });
-      leftNode.group.append('svg:circle')
-        .attr('id', leftNode.code + '--circle:' + childIndex)
-        .attr('r', keySize / 8)
-        .attr('cx', leftNodeX + keySize * childIndex)
-        .attr('cy', 128 * (matrixDepth + 1) + keySize)
-        .attr('fill', child.expanded ? 'steelblue' : 'white')
-        .attr('stroke', 'steelblue')
-        .attr('stroke-width', 4)
-        .on('click', () => {
+      leftNode.group
+        .append("svg:circle")
+        .attr("id", leftNode.code + "--circle:" + childIndex)
+        .attr("r", keySize / 8)
+        .attr("cx", leftNodeX + keySize * childIndex)
+        .attr("cy", 128 * (oldMatrixDepth + 1) + keySize)
+        .attr("fill", child.expanded ? "steelblue" : "white")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 4)
+        .on("click", () => {
           if (!acceptingUserInput) return;
           if (child.expanded) {
             child.expanded = false;
             d3.select('[id="' + child.code + '"]')
               .transition()
-              .style('opacity', 0)
+              .style("opacity", 0)
               .duration(300);
 
-            circle.transition()
-              .style('fill', 'white')
+            circle
+              .transition()
+              .style("fill", "white")
               .duration(300);
           } else {
             child.expanded = true;
             d3.select('[id="' + child.code + '"]')
               .transition()
-              .style('opacity', 1)
+              .style("opacity", 1)
               .duration(300);
 
-            circle.transition()
-              .style('fill', 'steelblue')
+            circle
+              .transition()
+              .style("fill", "steelblue")
               .duration(300);
           }
 
@@ -403,35 +397,38 @@ const insertValue = async (value) => {
       rightNode.group.append(() => {
         return removed.node();
       });
-      rightNode.group.append('svg:circle')
-        .attr('id', rightNode.code + '--circle:' + childIndex)
-        .attr('r', keySize / 8)
-        .attr('cx', rightNodeX + keySize * childIndex)
-        .attr('cy', 128 * (matrixDepth + 1) + keySize)
-        .attr('fill', child.expanded ? 'steelblue' : 'white')
-        .attr('stroke', 'steelblue')
-        .attr('stroke-width', 4)
-        .on('click', () => {
+      rightNode.group
+        .append("svg:circle")
+        .attr("id", rightNode.code + "--circle:" + childIndex)
+        .attr("r", keySize / 8)
+        .attr("cx", rightNodeX + keySize * childIndex)
+        .attr("cy", 128 * (oldMatrixDepth + 1) + keySize)
+        .attr("fill", child.expanded ? "steelblue" : "white")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 4)
+        .on("click", () => {
           if (!acceptingUserInput) return;
           if (child.expanded) {
             child.expanded = false;
             d3.select('[id="' + child.code + '"]')
               .transition()
-              .style('opacity', 0)
+              .style("opacity", 0)
               .duration(300);
 
-            circle.transition()
-              .style('fill', 'white')
+            circle
+              .transition()
+              .style("fill", "white")
               .duration(300);
           } else {
             child.expanded = true;
             d3.select('[id="' + child.code + '"]')
               .transition()
-              .style('opacity', 1)
+              .style("opacity", 1)
               .duration(300);
 
-            circle.transition()
-              .style('fill', 'steelblue')
+            circle
+              .transition()
+              .style("fill", "steelblue")
               .duration(300);
           }
 
@@ -467,36 +464,40 @@ const insertValue = async (value) => {
     }
 
     // insert one new circle because split introduces a new child
-    var circle = parentGroup.append('svg:circle')
-      .attr('id', parentNode.code + '--circle:' + (insertIndex + 1))
-      .attr('r', keySize / 8)
-      .attr('cy', (matrixDepth) * 128 + keySize)
-      .attr('cx', parseInt(promoteKeyRect.attr('x')) + keySize)
-      .attr('fill', 'steelblue')
-      .attr('stroke', 'steelblue')
-      .attr('stroke-width', 4)
-      .on('click', () => {
+    var circle = parentGroup
+      .append("svg:circle")
+      .attr("id", parentNode.code + "--circle:" + (insertIndex + 1))
+      .attr("r", keySize / 8)
+      // TODO:
+      .attr("cy", oldMatrixDepth * 128 + keySize)
+      .attr("cx", parseInt(promoteKeyRect.attr("x")) + keySize)
+      .attr("fill", "steelblue")
+      .attr("stroke", "steelblue")
+      .attr("stroke-width", 4)
+      .on("click", () => {
         if (!acceptingUserInput) return;
-        var child = parentNode.children[insertIndex + 1]
+        var child = parentNode.children[insertIndex + 1];
         if (child.expanded) {
           child.expanded = false;
           d3.select('[id="' + child.code + '"]')
             .transition()
-            .style('opacity', 0)
+            .style("opacity", 0)
             .duration(300);
 
-          circle.transition()
-            .style('fill', 'white')
+          circle
+            .transition()
+            .style("fill", "white")
             .duration(300);
         } else {
           child.expanded = true;
           d3.select('[id="' + child.code + '"]')
             .transition()
-            .style('opacity', 1)
+            .style("opacity", 1)
             .duration(300);
 
-          circle.transition()
-            .style('fill', 'steelblue')
+          circle
+            .transition()
+            .style("fill", "steelblue")
             .duration(300);
         }
       });
@@ -536,13 +537,13 @@ const insertValue = async (value) => {
     var y2ReferenceIndex = insertIndex == 0 ? 1 : 0;
     // draw the path from leftNode to parentNode
     var leftNodeX1 = leftNodeX + (keySize * leftNode.values.length / 2);
-    var leftNodeY1 = (128 * (matrixDepth + 1));
+    var leftNodeY1 = 128 * (oldMatrixDepth + 1);
 
     var parentLeftNodeCircle = d3.select('[id="' + parentNode.code + '--circle:' + leftNodeChildIndex + '"]');
     var leftNodeX2 = parseInt(parentLeftNodeCircle.attr("cx"));
 
     var parentRect = d3.select('[id="' + parentNode.code + '--rect:' + y2ReferenceIndex + '"]');
-    var y2 = parentRect.empty() ? 128 + keySize : keySize + parseInt(parentRect.attr('y'));
+    var y2 = parentRect.empty() ? oldMatrixDepth * 128 + keySize : keySize + parseInt(parentRect.attr("y"));
     var leftNodePathString = 'M' + leftNodeX1 + ' ' + leftNodeY1 + ' C ' + leftNodeX1 + ' ' + (leftNodeY1 - keySize * 1.5) + ', ' + leftNodeX2 + ' ' + (y2 + keySize * 1.5) + ', ' + leftNodeX2 + ' ' + y2;
     leftNode.group.append('svg:path')
       .attr('id', leftNode.code + '--path')
@@ -553,7 +554,7 @@ const insertValue = async (value) => {
       
     // draw the path from rightNode to parentNode
     var rightNodeX1 = rightNodeX + (keySize * rightNode.values.length / 2);
-    var rightNodeY1 = (128 * (matrixDepth + 1));
+    var rightNodeY1 = 128 * (oldMatrixDepth + 1);
 
     var parentRightNodeCircle = d3.select('[id="' + parentNode.code + "--circle:" + (leftNodeChildIndex + 1) + '"]');
     var rightNodeX2 = parseInt(parentRightNodeCircle.attr("cx"));
@@ -565,6 +566,8 @@ const insertValue = async (value) => {
       .attr('stroke', 'steelblue')
       .attr('stroke-width', 2)
       .attr('d', rightNodePathString);
+
+    
 
     /** ********* destroy the old group ******** **/
     thisNode.group.remove();

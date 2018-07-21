@@ -212,6 +212,7 @@ const redraw = (matrix) => {
 
         
         child.circleX = x + (keySize * childIndex);
+        child.bottomY = y + keySize;
         if (!child.circleX) console.log('circleX is null: ' + x + ' ' + keySize + ' ' + childIndex);
       });
 
@@ -221,7 +222,8 @@ const redraw = (matrix) => {
         var y1 = y;
 
         var x2 = node.circleX; // d3.select('[id="' + node.parent.code + '--circle:' + getChildIndex(node) + '"]').attr('cx');
-        var y2 = keySize + parseInt(d3.select('[id="' + node.parent.code + '--rect:' + 0 + '"]').attr('y'));
+        var y2 = node.bottomY;
+        // var y2 = keySize + parseInt(d3.select('[id="' + node.parent.code + '--rect:' + 0 + '"]').attr('y'));
 
         var pathString = 'M' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + (y1 - keySize * 1.5) + ', ' + x2 + ' ' + (y2 + keySize * 1.5) + ', ' + x2 + ' ' + y2;
         console.log('redraw path to parent: ' + pathString);
