@@ -1,8 +1,6 @@
 const keyExists = (key, matrix) => {
 	for (var i = 0; i < matrix.length; i++) {
 		for (var j = 0; j < matrix[i].length; j++) {
-			console.log('checking ' + key + ' against ')
-			console.log(matrix[i][j].values)
 			for (var k = 0; k < matrix[i][j].values.length; k++) {
 				if (matrix[i][j].values[k] == key) return true
 			}

@@ -11,11 +11,20 @@
 
 <body>
   <div style="margin: 0 auto; text-align: center; margin-top: 24px;">
-    <form id="modifyForm" onsubmit="insertValue(document.getElementById('insert').value)">
+    <form style="display: inline-block; margin: 8px;" id="insertForm" onsubmit="insertValue(document.getElementById('insert').value)">
       <label class="field a-field a-field_a1 page__field">
         <input id="insert" type="number" class="field__input" placeholder="e.g. 36" required>
         <span class="field__label-wrap">
           <span class="field__label">Insert</span>
+        </span>
+      </label>
+    </form>
+
+    <form style="display: inline-block; margin: 8px;" id="lookupForm" onsubmit="lookupValue(document.getElementById('lookup').value)">
+      <label class="field a-field a-field_a1 page__field">
+        <input id="lookup" type="number" class="field__input" placeholder="e.g. 36" required>
+        <span class="field__label-wrap">
+          <span class="field__label">Lookup</span>
         </span>
       </label>
     </form>
@@ -25,6 +34,7 @@
   <script src="render.js"></script>
   <script src="utils.js"></script>
   <script src="insertValue.js"></script>
+  <script src="lookupValue.js"></script>
 </body>
 
 </html>

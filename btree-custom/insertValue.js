@@ -242,14 +242,9 @@ const insertValue = async value => {
 				parent: null
 			}
 
-			console.log('old root code: ' + thisNode.code)
-			console.log('new root code: ' + parentNode.code)
-			console.log('matrix before:')
-			console.log(matrix)
 			matrix.splice(0, 0, [parentNode])
 			matrixDepth++
-			console.log('matrix after:')
-			console.log(matrix)
+
 			thisNode.parent = parentNode
 
 			// give this new root a group
