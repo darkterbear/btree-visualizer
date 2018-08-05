@@ -132,23 +132,23 @@ const draw = matrix => {
 							d3.select('[id="' + child.code + '"]')
 								.transition()
 								.style('opacity', 0)
-								.duration(300)
+								.duration(speed)
 
 							circle
 								.transition()
 								.style('fill', 'white')
-								.duration(300)
+								.duration(speed)
 						} else {
 							child.expanded = true
 							d3.select('[id="' + child.code + '"]')
 								.transition()
 								.style('opacity', 1)
-								.duration(300)
+								.duration(speed)
 
 							circle
 								.transition()
 								.style('fill', 'steelblue')
-								.duration(300)
+								.duration(speed)
 						}
 
 						redraw(matrix)
@@ -183,13 +183,13 @@ const redraw = matrix => {
 					.transition()
 					.attr('x', keySize * keyIndex + x)
 					.attr('y', y)
-					.duration(300)
+					.duration(speed)
 
 				d3.select('[id="' + nodeCode + '--text:' + keyIndex + '"]')
 					.transition()
 					.attr('x', keySize * (keyIndex + 0.5) + x)
 					.attr('y', y + keySize / 1.5)
-					.duration(300)
+					.duration(speed)
 			})
 
 			// redraw the node's children circles
@@ -214,23 +214,23 @@ const redraw = matrix => {
 							d3.select('[id="' + child.code + '"]')
 								.transition()
 								.style('opacity', 0)
-								.duration(300)
+								.duration(speed)
 
 							circle
 								.transition()
 								.style('fill', 'white')
-								.duration(300)
+								.duration(speed)
 						} else {
 							child.expanded = true
 							d3.select('[id="' + child.code + '"]')
 								.transition()
 								.style('opacity', 1)
-								.duration(300)
+								.duration(speed)
 
 							circle
 								.transition()
 								.style('fill', 'steelblue')
-								.duration(300)
+								.duration(speed)
 						}
 
 						redraw(matrix)
@@ -241,7 +241,7 @@ const redraw = matrix => {
 					.attr('cx', x + keySize * childIndex)
 					.attr('cy', y + keySize)
 					.style('fill', child.expanded ? 'steelblue' : 'white')
-					.duration(300)
+					.duration(speed)
 
 				circle.remove()
 
@@ -279,7 +279,7 @@ const redraw = matrix => {
 				d3.select('[id="' + node.code + '--path"]')
 					.transition()
 					.attr('d', pathString)
-					.duration(300)
+					.duration(speed)
 
 				/*
         d3.select('[id="' + node.code + '--line"]')
@@ -288,7 +288,7 @@ const redraw = matrix => {
           .attr('y1', y1)
           .attr('x2', x2)
           .attr('y2', y2)
-          .duration(300);*/
+          .duration(speed);*/
 			}
 		})
 	})

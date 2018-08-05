@@ -7,6 +7,9 @@ var maxKeys = 0
 // length, in user units, of the key display dimensions
 const keySize = 48
 
+// animation speed; larger is slower
+const speed = 300
+
 window.onload = () => {
 	/**
 	 * Just Make sure to return false so that your request will not go the server script
@@ -36,8 +39,8 @@ var matrix = []
 /**
  * Reads the json data from file input
  */
-d3.json('data-btree-2.2.json', data => {
-	maxKeys = data.maxKeys
+d3.json('t3.json', data => {
+	maxKeys = data.t * 2 - 1
 	// inject parent data
 	injectParent(data.root)
 

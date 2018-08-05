@@ -16,7 +16,7 @@ const lookupValue = async value => {
 		d3.select('[id="' + rootNodeCode + '--circle:' + index)
 			.transition()
 			.style('fill', 'white')
-			.duration(300)
+			.duration(speed)
 	})
 
 	// animate the new key down to the correct leaf
@@ -41,7 +41,7 @@ const lookupValue = async value => {
 		d3.select('[id="' + nodeCode + '"]')
 			.transition()
 			.style('opacity', 1)
-			.duration(300)
+			.duration(speed)
 
 		// redraw the matrix
 		redraw(matrix)
@@ -49,7 +49,7 @@ const lookupValue = async value => {
 		// set thisNode to child
 		thisNode = child
 
-		await sleep(500)
+		await sleep(speed * 2)
 	}
 
 	// thisNode is now the correct leaf node
@@ -61,16 +61,16 @@ const lookupValue = async value => {
 		rect
 			.transition()
 			.attr('stroke', ' #d6eaf8 ')
-			.duration(300)
+			.duration(200)
 
-		await sleep(300)
+		await sleep(200)
 
 		rect
 			.transition()
 			.attr('stroke', 'steelblue')
-			.duration(300)
+			.duration(200)
 
-		await sleep(300)
+		await sleep(200)
 	}
 
 	acceptingUserInput = true

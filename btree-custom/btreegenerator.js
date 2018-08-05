@@ -1,3 +1,5 @@
+const t = 3
+
 var object = {}
 var x = 1
 var inject = (node, level) => {
@@ -6,7 +8,7 @@ var inject = (node, level) => {
 	else node.expanded = false
 	node.values = []
 	node.children = []
-	for (var i = 0; i < 4; i++) {
+	for (var i = 0; i < t * 2; i++) {
 		var child = {}
 		inject(child, level + 1)
 
@@ -21,3 +23,10 @@ var inject = (node, level) => {
 }
 
 inject(object, 0)
+
+const final = {
+	t: t,
+	root: object
+}
+
+console.log(JSON.stringify(final))

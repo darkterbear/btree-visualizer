@@ -95,12 +95,12 @@ const collapseAll = node => {
 		d3.select('[id="' + nodeCode + '"]')
 			.transition()
 			.style('opacity', 0)
-			.duration(300)
+			.duration(speed)
 
 		d3.select('[id="' + nodeCode + '--circle:' + index + ']')
 			.transition()
 			.style('fill', 'white')
-			.duration(300)
+			.duration(speed)
 
 		collapseAll(child)
 	})

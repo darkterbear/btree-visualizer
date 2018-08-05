@@ -1,8 +1,8 @@
-const insertValue = async value => {
-	// check that the key doesn't already exist
-	if (keyExists(value, matrix)) return
+const deleteValue = async value => {
+	// check that the key exists
+	if (!keyExists(value, matrix)) return
 
-	// dont allow insert when another insert is happening
+	// dont allow deletion when something else is happening
 	if (!acceptingUserInput) return
 
 	// disable user input while insert is in progress
@@ -16,53 +16,8 @@ const insertValue = async value => {
 		d3.select('[id="' + rootNodeCode + '--circle:' + index)
 			.transition()
 			.style('fill', 'white')
-			.duration(speed)
+			.duration(300)
 	})
-
-	// show the new key being created
-
-	var x =
-		parseInt(d3.select('[id="' + rootNodeCode + '--rect:0').attr('x')) +
-		(1 + root.values.length) * keySize
-	var y = 128
-
-	var insertKey = svg
-		.append('svg:g')
-		.attr('id', 'insert')
-		.style('opacity', 0)
-
-	var rect = insertKey
-		.append('svg:rect')
-		.attr('id', 'insert--rect')
-		.attr('height', keySize)
-		.attr('width', keySize)
-		.attr('x', x)
-		.attr('y', y)
-		.attr('fill', 'white')
-		.attr('stroke', 'steelblue')
-		//.attr('stroke', 'limegreen')
-		.attr('stroke-width', 4)
-
-	var text = insertKey
-		.append('svg:text')
-		.attr('id', 'inserting--text')
-		.attr('x', keySize * 0.5 + x)
-		.attr('y', y + keySize / 1.5)
-		.attr('font-family', 'Sofia Pro')
-		.attr('font-size', 24)
-		.attr('fill', 'black')
-		.attr('stroke', 'black')
-		.style('text-anchor', 'middle')
-		.text(() => {
-			return value
-		})
-
-	insertKey
-		.transition()
-		.style('opacity', 1)
-		.duration(speed)
-
-	await sleep(speed * 2)
 
 	// animate the new key down to the correct leaf
 	var thisNode = root
@@ -83,19 +38,19 @@ const insertValue = async value => {
 		d3.select('[id="' + nodeCode + '"]')
 			.transition()
 			.style('opacity', 1)
-			.duration(speed)
+			.duration(300)
 
 		// move the newkey down to the same level as the newly expanded child
 		y += 128
 		text
 			.transition()
 			.attr('y', y + keySize / 1.5)
-			.duration(speed)
+			.duration(300)
 
 		rect
 			.transition()
 			.attr('y', y)
-			.duration(speed)
+			.duration(300)
 
 		// redraw the matrix
 		redraw(matrix)
@@ -103,7 +58,7 @@ const insertValue = async value => {
 		// set thisNode to child
 		thisNode = child
 
-		await sleep(speed * 2)
+		await sleep(500)
 	}
 
 	// thisNode is now the correct leaf node
@@ -171,7 +126,7 @@ const insertValue = async value => {
 	// redraw to animate the insertion
 	redraw(matrix)
 
-	await sleep(speed)
+	await sleep(300)
 
 	// find leaf depth (should be deepest - 1)
 	var matrixDepth = matrix.length - 2
@@ -284,23 +239,23 @@ const insertValue = async value => {
 						d3.select('[id="' + thisNode.code + '"]')
 							.transition()
 							.style('opacity', 0)
-							.duration(speed)
+							.duration(300)
 
 						circle
 							.transition()
 							.style('fill', 'white')
-							.duration(speed)
+							.duration(300)
 					} else {
 						thisNode.expanded = true
 						d3.select('[id="' + thisNode.code + '"]')
 							.transition()
 							.style('opacity', 1)
-							.duration(speed)
+							.duration(300)
 
 						circle
 							.transition()
 							.style('fill', 'steelblue')
-							.duration(speed)
+							.duration(300)
 					}
 
 					redraw(matrix)
@@ -410,23 +365,23 @@ const insertValue = async value => {
 						d3.select('[id="' + child.code + '"]')
 							.transition()
 							.style('opacity', 0)
-							.duration(speed)
+							.duration(300)
 
 						circle
 							.transition()
 							.style('fill', 'white')
-							.duration(speed)
+							.duration(300)
 					} else {
 						child.expanded = true
 						d3.select('[id="' + child.code + '"]')
 							.transition()
 							.style('opacity', 1)
-							.duration(speed)
+							.duration(300)
 
 						circle
 							.transition()
 							.style('fill', 'steelblue')
-							.duration(speed)
+							.duration(300)
 					}
 
 					redraw(matrix)
@@ -456,23 +411,23 @@ const insertValue = async value => {
 						d3.select('[id="' + child.code + '"]')
 							.transition()
 							.style('opacity', 0)
-							.duration(speed)
+							.duration(300)
 
 						circle
 							.transition()
 							.style('fill', 'white')
-							.duration(speed)
+							.duration(300)
 					} else {
 						child.expanded = true
 						d3.select('[id="' + child.code + '"]')
 							.transition()
 							.style('opacity', 1)
-							.duration(speed)
+							.duration(300)
 
 						circle
 							.transition()
 							.style('fill', 'steelblue')
-							.duration(speed)
+							.duration(300)
 					}
 
 					redraw(matrix)
@@ -527,23 +482,23 @@ const insertValue = async value => {
 					d3.select('[id="' + child.code + '"]')
 						.transition()
 						.style('opacity', 0)
-						.duration(speed)
+						.duration(300)
 
 					circle
 						.transition()
 						.style('fill', 'white')
-						.duration(speed)
+						.duration(300)
 				} else {
 					child.expanded = true
 					d3.select('[id="' + child.code + '"]')
 						.transition()
 						.style('opacity', 1)
-						.duration(speed)
+						.duration(300)
 
 					circle
 						.transition()
 						.style('fill', 'steelblue')
-						.duration(speed)
+						.duration(300)
 				}
 			})
 
@@ -676,14 +631,14 @@ const insertValue = async value => {
 		promotedText
 			.transition()
 			.attr('y', parseInt(promotedText.attr('y')) - 128)
-			.duration(speed)
+			.duration(300)
 
 		promotedRect
 			.transition()
 			.attr('y', parseInt(promotedRect.attr('y')) - 128)
-			.duration(speed)
+			.duration(300)
 
-		await sleep(speed)
+		await sleep(300)
 
 		/** ********* redraw the entire thing ******** **/
 		redraw(matrix)
@@ -692,7 +647,7 @@ const insertValue = async value => {
 		thisNode = thisNode.parent
 		matrixDepth--
 
-		await sleep(speed)
+		await sleep(300)
 		//break;
 	}
 
