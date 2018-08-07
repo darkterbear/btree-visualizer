@@ -69,7 +69,69 @@ const deleteFromTree = async (value, thisNode) => {
 			deleteFromNode(value, thisNode)
 		} else {
 			// ohboi this might get complicated
-			// TODO: call another function to do rotate/merge
+			// so thisNode is a leaf but we cant delete the value straight up because not enough keys inside thisNode
+
+			// find the index of thisNode in the children of its parent
+			var parent = thisNode.parent
+
+			var indexOfThisNodeInParent = 0
+
+			for (
+				;
+				indexOfThisNodeInParent < parent.children.length;
+				indexOfThisNodeInParent++
+			) {
+				if (parent.children[indexOfThisNodeInParent].code == thisNode.code)
+					break
+			}
+
+			// get thisNode's siblings
+			var y =
+				indexOfThisNodeInParent - 1 >= 0
+					? parent.chilren[indexOfThisNodeInParent - 1]
+					: null
+			var z =
+				indexOfThisNodeInParent + 1 < parent.children.length
+					? parent.children[indexOfThisNodeInParent + 1]
+					: null
+
+			// check if either of its siblings has >= t keys
+			if (y && y.values.length >= t) {
+				// TODO: r o t a t e (case 2a)
+			} else if (z && z.values.length >= t) {
+				// TODO: r o t a t e (case 2a)
+			} else {
+				// if not, m e r g e thisNode w/ one of the siblings
+				// TODO: merge
+			}
+		}
+	}
+	// this is an internal node...
+	else {
+		// find the index of value in thisNode
+		var indexOfKey = 0
+
+		for (; indexOfKey < thisNode.values.length; indexOfKey++) {
+			if (thisNode.values[indexOfKey] == value) break
+		}
+
+		// find the 2 children next to this value
+
+		const y = indexOfKey >= 0 ? thisNode.children[indexOfKey] : null
+		const z =
+			indexOfKey + 1 < thisNode.children.length
+				? thisNode.children[indexOfKey + 1]
+				: null
+
+		// do either of them have sufficient (>= t) keys?
+		if (y && y.values.length >= t) {
+			// TODO: recursive delete (case 3a)
+		} else if (z && z.values.length >= t) {
+			// TODO: recursive delete (case 3bs)
+		}
+		// neither of them have sufficient keys, perform merge
+		else {
+			// TODO: merge (case 3c)
 		}
 	}
 }
@@ -85,7 +147,6 @@ deleteFromNode = async (value, thisNode) => {
 		if (thisNode.values[indexOfKey] == value) break
 	}
 
-	console.log('removing index ' + indexOfKey)
 	// splice the value
 	thisNode.values.splice(indexOfKey, 1)
 
