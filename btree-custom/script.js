@@ -3,6 +3,7 @@ var wW = window.innerWidth
 var wH = window.innerHeight
 var acceptingUserInput = true
 var maxKeys = 0
+var t = 0
 
 // length, in user units, of the key display dimensions
 const keySize = 48
@@ -15,14 +16,17 @@ window.onload = () => {
 	 * Just Make sure to return false so that your request will not go the server script
 	 */
 	document.querySelector('#insertForm').addEventListener('submit', function(e) {
-		//some code
 		document.getElementById('insert').value = ''
 		e.preventDefault()
 	})
 
 	document.querySelector('#lookupForm').addEventListener('submit', function(e) {
-		//some code
 		document.getElementById('lookup').value = ''
+		e.preventDefault()
+	})
+
+	document.querySelector('#deleteForm').addEventListener('submit', function(e) {
+		document.getElementById('delete').value = ''
 		e.preventDefault()
 	})
 }
@@ -41,6 +45,7 @@ var matrix = []
  */
 d3.json('t3.json', data => {
 	maxKeys = data.t * 2 - 1
+	t = data.t
 	// inject parent data
 	injectParent(data.root)
 

@@ -28,6 +28,15 @@
         </span>
       </label>
     </form>
+
+    <form style="display: inline-block; margin: 8px;" id="deleteForm" onsubmit="deleteValue(document.getElementById('delete').value)">
+      <label class="field a-field a-field_a1 page__field">
+        <input id="delete" type="number" class="field__input" placeholder="e.g. 36" required>
+        <span class="field__label-wrap">
+          <span class="field__label">Delete</span>
+        </span>
+      </label>
+    </form>
   </div>
 
   <script src="script.js"></script>
