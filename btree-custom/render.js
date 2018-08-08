@@ -169,6 +169,11 @@ const redraw = matrix => {
 		row.forEach((node, index, row) => {
 			// check if node should be rendered
 			if (!shouldBeRendered(node)) return
+			else
+				node.group
+					.transition()
+					.style('opacity', 1)
+					.duration(speed)
 
 			var xCenter = (wW / (numRendered + 1)) * (renderIndex + 1)
 			var nodeWidth = node.values.length * keySize

@@ -36,7 +36,7 @@ var svg = d3
 	.select('body')
 	.append('svg:svg')
 	.attr('width', wW)
-	.attr('height', wH)
+	.attr('height', wH - 120)
 
 var matrix = []
 
