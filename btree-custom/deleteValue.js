@@ -148,15 +148,74 @@ const deleteFromTree = async (node, keyIndex) => {
 
 		// do either of them have sufficient (>= t) keys?
 		if (y && y.values.length >= t) {
-			// TODO: recursive delete (case 3a)
+			if (z) z.expanded = true
+			await recursiveDelete(node, y, keyIndex, false)
 		} else if (z && z.values.length >= t) {
-			// TODO: recursive delete (case 3bs)
+			if (y) y.expanded = true
+			await recursiveDelete(node, z, keyIndex, true)
 		}
 		// neither of them have sufficient keys, perform merge
 		else {
 			// TODO: merge (case 3c)
 		}
 	}
+}
+
+const recursiveDelete = async (node, child, index, isOnRight) => {
+	/** expand the left child */
+	child.expanded = true
+	redraw(matrix)
+
+	await sleep(speed)
+
+	var childPromoteIndex = isOnRight ? 0 : child.values.length - 1
+
+	/** modify the matrix */
+	// set leftmost key in node to rightmost key in child
+	node.values[index] = child.values[childPromoteIndex]
+
+	/** change ids, move groups, etc. */
+	var deleteKeyRect = d3.select('[id="' + node.code + '--rect:' + index + '"]')
+	var deleteKeyText = d3.select('[id="' + node.code + '--text:' + index + '"]')
+
+	deleteKeyRect
+		.transition()
+		.style('opacity', 0)
+		.duration(speed)
+
+	deleteKeyText
+		.transition()
+		.style('opacity', 0)
+		.duration(speed)
+
+	var childKeyRect = d3.select(
+		'[id="' + child.code + '--rect:' + childPromoteIndex + '"]'
+	)
+	var childKeyText = d3.select(
+		'[id="' + child.code + '--text:' + childPromoteIndex + '"]'
+	)
+
+	childKeyRect.attr('id', node.code + '--rect:' + index)
+	childKeyText.attr('id', node.code + '--text:' + index)
+
+	node.group.append(() => {
+		return childKeyRect.remove().node()
+	})
+
+	node.group.append(() => {
+		return childKeyText.remove().node()
+	})
+
+	await sleep(speed)
+
+	deleteKeyRect.remove()
+	deleteKeyText.remove()
+
+	redraw(matrix)
+
+	await sleep(speed)
+
+	await deleteFromTree(child, childPromoteIndex)
 }
 
 /** merges two leaf nodes together */
@@ -177,6 +236,7 @@ const mergeLeavesAndDelete = async (
 	/** make changes to the matrix */
 
 	// to smush them two together, first splice parentkey into left
+	// TODO: use recursive upwards propogating deletion
 	left.values.splice(
 		left.values.length,
 		0,
