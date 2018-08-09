@@ -54,25 +54,30 @@ const deleteValue = async value => {
 
 	// thisNode is now the correct leaf node
 	// start the recursive algorithm
-	await deleteFromTree(value, thisNode)
+	var index = 0
+	for (; index < thisNode.values.length; index++) {
+		if (thisNode.values[index] == value) break
+	}
+
+	await deleteFromTree(thisNode, index)
 
 	acceptingUserInput = true
 }
 
-const deleteFromTree = async (value, thisNode) => {
+const deleteFromTree = async (node, keyIndex) => {
 	// start going through the cases (ohboi)
 
 	// is thisNode a leaf?
-	if (thisNode.children.length === 0) {
+	if (node.children.length === 0) {
 		// does thisNode have sufficient keys for us to just take one out?
-		if (thisNode.values.length >= t) {
-			await deleteFromNode(value, thisNode)
+		if (node.values.length >= t) {
+			await deleteFromNode(node, keyIndex)
 		} else {
 			// ohboi this might get complicated
 			// so thisNode is a leaf but we cant delete the value straight up because not enough keys inside thisNode
 
 			// find the index of thisNode in the children of its parent
-			var parent = thisNode.parent
+			var parent = node.parent
 
 			var indexOfThisNodeInParent = 0
 
@@ -81,8 +86,7 @@ const deleteFromTree = async (value, thisNode) => {
 				indexOfThisNodeInParent < parent.children.length;
 				indexOfThisNodeInParent++
 			) {
-				if (parent.children[indexOfThisNodeInParent].code == thisNode.code)
-					break
+				if (parent.children[indexOfThisNodeInParent].code == node.code) break
 			}
 
 			// get thisNode's siblings
@@ -98,18 +102,18 @@ const deleteFromTree = async (value, thisNode) => {
 			// check if either of its siblings has >= t keys
 			if (y && y.values.length >= t) {
 				await leftLeafRotateDeletion(
-					value,
-					thisNode,
+					keyIndex,
+					node,
 					y,
-					thisNode.parent,
+					node.parent,
 					indexOfThisNodeInParent - 1
 				)
 			} else if (z && z.values.length >= t) {
 				await rightLeafRotateDeletion(
-					value,
-					thisNode,
+					keyIndex,
+					node,
 					z,
-					thisNode.parent,
+					node.parent,
 					indexOfThisNodeInParent
 				)
 			} else {
@@ -117,18 +121,18 @@ const deleteFromTree = async (value, thisNode) => {
 				if (y) {
 					mergeLeavesAndDelete(
 						y,
-						thisNode,
-						thisNode.parent,
+						node,
+						node.parent,
 						indexOfThisNodeInParent - 1,
-						value
+						keyIndex
 					)
 				} else if (z) {
 					mergeLeavesAndDelete(
-						thisNode,
+						node,
 						z,
-						thisNode.parent,
+						node.parent,
 						indexOfThisNodeInParent,
-						value
+						keyIndex
 					)
 				}
 			}
@@ -136,20 +140,11 @@ const deleteFromTree = async (value, thisNode) => {
 	}
 	// this is an internal node...
 	else {
-		// find the index of value in thisNode
-		var indexOfKey = 0
-
-		for (; indexOfKey < thisNode.values.length; indexOfKey++) {
-			if (thisNode.values[indexOfKey] == value) break
-		}
-
 		// find the 2 children next to this value
 
-		const y = indexOfKey >= 0 ? thisNode.children[indexOfKey] : null
+		const y = keyIndex >= 0 ? node.children[keyIndex] : null
 		const z =
-			indexOfKey + 1 < thisNode.children.length
-				? thisNode.children[indexOfKey + 1]
-				: null
+			keyIndex + 1 < node.children.length ? node.children[keyIndex + 1] : null
 
 		// do either of them have sufficient (>= t) keys?
 		if (y && y.values.length >= t) {
@@ -165,7 +160,13 @@ const deleteFromTree = async (value, thisNode) => {
 }
 
 /** merges two leaf nodes together */
-const mergeLeavesAndDelete = async (left, right, parent, parentKeyIndex, k) => {
+const mergeLeavesAndDelete = async (
+	left,
+	right,
+	parent,
+	parentKeyIndex,
+	index
+) => {
 	/** expand both left and right for visualization */
 	left.expanded = true
 	right.expanded = true
@@ -193,17 +194,6 @@ const mergeLeavesAndDelete = async (left, right, parent, parentKeyIndex, k) => {
 	// pull `right` out of the matrix
 	deleteFromMatrix(right.code)
 
-	// find the index of k in left
-	// var index = 0
-	// for (; index < left.length; index++) {
-	// 	if (left.values[index] == k) break
-	// }
-
-	// // splice k from left
-	// left.values.splice(index, 1)
-
-	/** change ids to reflect matrix */
-	// change the parentkey id (just use t - 1 as index since we know left started w/ t - 1 keys)
 	var parentKeyRect = d3.select(
 		'[id="' + parent.code + '--rect:' + parentKeyIndex + '"]'
 	)
@@ -290,11 +280,11 @@ const mergeLeavesAndDelete = async (left, right, parent, parentKeyIndex, k) => {
 	removeCircle.remove()
 	right.group.remove()
 
-	deleteFromNode(k, left)
+	deleteFromNode(left, index)
 }
 
 const leftLeafRotateDeletion = async (
-	k,
+	index,
 	x,
 	y,
 	parent,
@@ -307,12 +297,6 @@ const leftLeafRotateDeletion = async (
 	await sleep(speed)
 
 	/** make changes to the matrix **/
-	// find the index of the key in x
-
-	var index = 0
-	for (; index < x.values.length; index++) {
-		if (x.values[index] == k) break
-	}
 
 	// shift the nodes up to make space for the incoming rotation
 	var shifter = index
@@ -414,7 +398,7 @@ const leftLeafRotateDeletion = async (
 }
 
 const rightLeafRotateDeletion = async (
-	k,
+	index,
 	x,
 	z,
 	parent,
@@ -427,12 +411,6 @@ const rightLeafRotateDeletion = async (
 	await sleep(speed)
 
 	/** make changes to the matrix **/
-	// find the index of the key in x
-
-	var index = 0
-	for (; index < x.values.length; index++) {
-		if (x.values[index] == k) break
-	}
 
 	// shift the nodes up to make space for the incoming rotation
 	var shifter = index
@@ -539,27 +517,20 @@ const rightLeafRotateDeletion = async (
 	redraw(matrix)
 }
 
-deleteFromNode = async (value, thisNode) => {
+deleteFromNode = async (node, keyIndex) => {
 	// check that thisNode is actually a leaf so we dont fuck anything up
-	if (thisNode.children.length > 0) return
-
-	// straight up remove the key from the node
-	var indexOfKey = 0
-
-	for (; indexOfKey < thisNode.values.length; indexOfKey++) {
-		if (thisNode.values[indexOfKey] == value) break
-	}
+	if (node.children.length > 0) return
 
 	// splice the value
-	thisNode.values.splice(indexOfKey, 1)
+	node.values.splice(keyIndex, 1)
 
 	// animate this removal
 	// get rid of the rectangle and text
 	const targetRect = d3.select(
-		'[id="' + thisNode.code + '--rect:' + indexOfKey + '"]'
+		'[id="' + node.code + '--rect:' + keyIndex + '"]'
 	)
 	const targetText = d3.select(
-		'[id="' + thisNode.code + '--text:' + indexOfKey + '"]'
+		'[id="' + node.code + '--text:' + keyIndex + '"]'
 	)
 
 	targetRect
@@ -580,14 +551,14 @@ deleteFromNode = async (value, thisNode) => {
 	targetText.remove()
 
 	// shift everything that was to its right down an id value
-	for (var i = indexOfKey + 1; i <= thisNode.values.length; i++) {
-		d3.select('[id="' + thisNode.code + '--rect:' + i + '"]').attr(
+	for (var i = keyIndex + 1; i <= node.values.length; i++) {
+		d3.select('[id="' + node.code + '--rect:' + i + '"]').attr(
 			'id',
-			thisNode.code + '--rect:' + (i - 1)
+			node.code + '--rect:' + (i - 1)
 		)
-		d3.select('[id="' + thisNode.code + '--text:' + i + '"]').attr(
+		d3.select('[id="' + node.code + '--text:' + i + '"]').attr(
 			'id',
-			thisNode.code + '--text:' + (i - 1)
+			node.code + '--text:' + (i - 1)
 		)
 	}
 
