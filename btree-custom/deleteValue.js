@@ -115,11 +115,21 @@ const deleteFromTree = async (value, thisNode) => {
 			} else {
 				// if not, m e r g e thisNode w/ one of the siblings
 				if (y) {
-					mergeLeaves(y, x, thisNode.parent, indexOfThisNodeInParent - 1)
-					deleteFromNode(value, y)
+					mergeLeavesAndDelete(
+						y,
+						thisNode,
+						thisNode.parent,
+						indexOfThisNodeInParent - 1,
+						value
+					)
 				} else if (z) {
-					mergeLeaves(x, z, thisNode.parent, indexOfThisNodeInParent)
-					deleteFromNode(value, x)
+					mergeLeavesAndDelete(
+						thisNode,
+						z,
+						thisNode.parent,
+						indexOfThisNodeInParent,
+						value
+					)
 				}
 			}
 		}
@@ -155,8 +165,17 @@ const deleteFromTree = async (value, thisNode) => {
 }
 
 /** merges two leaf nodes together */
-const mergeLeaves = async (left, right, parent, parentKey) => {
+const mergeLeavesAndDelete = async (left, right, parent, parentKey, k) => {
 	/** expand both left and right for visualization */
+	left.expanded = true
+	right.expanded = true
+	redraw(matrix)
+
+	await sleep(speed)
+
+	/** make changes to the matrix */
+	// TODO: from here
+	// to smush them two together, first shove everything from right into left
 }
 
 const leftLeafRotateDeletion = async (
@@ -169,10 +188,6 @@ const leftLeafRotateDeletion = async (
 	/** expand y for visualization */
 	y.expanded = true
 	redraw(matrix)
-	// y.group
-	// 	.transition()
-	// 	.style('opacity', 1)
-	// 	.duration(speed)
 
 	await sleep(speed)
 
