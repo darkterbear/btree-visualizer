@@ -290,7 +290,7 @@ const mergeLeavesAndDelete = async (left, right, parent, parentKeyIndex, k) => {
 	removeCircle.remove()
 	right.group.remove()
 
-	// TODO: actually delete this key kek
+	deleteFromNode(k, left)
 }
 
 const leftLeafRotateDeletion = async (
