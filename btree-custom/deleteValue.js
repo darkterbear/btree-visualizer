@@ -165,7 +165,7 @@ const deleteFromTree = async (value, thisNode) => {
 }
 
 /** merges two leaf nodes together */
-const mergeLeavesAndDelete = async (left, right, parent, parentKey, k) => {
+const mergeLeavesAndDelete = async (left, right, parent, parentKeyIndex, k) => {
 	/** expand both left and right for visualization */
 	left.expanded = true
 	right.expanded = true
@@ -174,8 +174,123 @@ const mergeLeavesAndDelete = async (left, right, parent, parentKey, k) => {
 	await sleep(speed)
 
 	/** make changes to the matrix */
-	// TODO: from here
-	// to smush them two together, first shove everything from right into left
+
+	// to smush them two together, first splice parentkey into left
+	left.values.splice(
+		left.values.length,
+		0,
+		parent.values.splice(parentKeyIndex, 1)[0]
+	)
+
+	// then shove everything from right into left
+	right.values.forEach(value => {
+		left.values.splice(left.values.length, 0, value)
+	})
+
+	// splice `right` from parent's children
+	parent.children.splice(parentKeyIndex + 1, 1)
+
+	// pull `right` out of the matrix
+	deleteFromMatrix(right.code)
+
+	// find the index of k in left
+	// var index = 0
+	// for (; index < left.length; index++) {
+	// 	if (left.values[index] == k) break
+	// }
+
+	// // splice k from left
+	// left.values.splice(index, 1)
+
+	/** change ids to reflect matrix */
+	// change the parentkey id (just use t - 1 as index since we know left started w/ t - 1 keys)
+	var parentKeyRect = d3.select(
+		'[id="' + parent.code + '--rect:' + parentKeyIndex + '"]'
+	)
+
+	var parentKeyText = d3.select(
+		'[id="' + parent.code + '--text:' + parentKeyIndex + '"]'
+	)
+
+	parentKeyRect.attr('id', left.code + '--rect:' + (t - 1))
+	parentKeyText.attr('id', left.code + '--text:' + (t - 1))
+
+	var parentKeyRectNode = parentKeyRect.remove().node()
+	var parentKeyTextNode = parentKeyText.remove().node()
+
+	left.group.append(() => {
+		return parentKeyRectNode
+	})
+	left.group.append(() => {
+		return parentKeyTextNode
+	})
+
+	// tag the circle to remove
+	var removeCircle = d3.select(
+		'[id="' + parent.code + '--circle:' + (parentKeyIndex + 1)
+	)
+	removeCircle.attr('id', 'removeCircle') // prevent id confusion when shifting other circles down
+
+	// shift the parent's keys and circles down to fill the void
+	// we have to go all the way up to the values array's length since we spliced a value earlier
+	for (
+		var shifter = parentKeyIndex + 1;
+		shifter <= parent.values.length;
+		shifter++
+	) {
+		d3.select('[id="' + parent.code + '--rect:' + shifter + '"]').attr(
+			'id',
+			parent.code + '--rect:' + (shifter - 1)
+		)
+		d3.select('[id="' + parent.code + '--text:' + shifter + '"]').attr(
+			'id',
+			parent.code + '--text:' + (shifter - 1)
+		)
+
+		d3.select('[id="' + parent.code + '--circle:' + (shifter + 1) + '"]').attr(
+			'id',
+			parent.code + '--circle:' + shifter
+		)
+	}
+
+	// change the right leaf's key ids
+	for (var i = 0; i < t - 1; i++) {
+		var rightRect = d3.select('[id="' + right.code + '--rect:' + i + '"]')
+		var rightText = d3.select('[id="' + right.code + '--text:' + i + '"]')
+		rightRect.attr('id', left.code + '--rect:' + (t + i))
+		rightText.attr('id', left.code + '--text:' + (t + i))
+
+		var rightRectNode = rightRect.remove().node()
+		var rightTextNode = rightText.remove().node()
+
+		left.group.append(() => {
+			return rightRectNode
+		})
+		left.group.append(() => {
+			return rightTextNode
+		})
+	}
+
+	/** redraw */
+	// make the parent circle disappear
+	removeCircle
+		.transition()
+		.style('opacity', 0)
+		.duration(speed)
+
+	right.group
+		.transition()
+		.style('opacity', 0)
+		.duration(speed)
+
+	redraw(matrix)
+
+	await sleep(speed)
+
+	removeCircle.remove()
+	right.group.remove()
+
+	// TODO: actually delete this key kek
 }
 
 const leftLeafRotateDeletion = async (

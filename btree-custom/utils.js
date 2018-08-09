@@ -106,6 +106,17 @@ const collapseAll = node => {
 	})
 }
 
+const deleteFromMatrix = code => {
+	for (var i = 0; i < matrix.length; i++) {
+		for (var j = 0; j < matrix[i].length; j++) {
+			if (matrix[i][j].code === code) {
+				matrix[i].splice(j, 1)
+				return
+			}
+		}
+	}
+}
+
 const sleep = ms => {
 	return new Promise(resolve => setTimeout(resolve, ms))
 }
