@@ -54,7 +54,7 @@ const deleteValue = async value => {
 
 	// thisNode is now the correct leaf node
 	// start the recursive algorithm
-	deleteFromTree(value, thisNode)
+	await deleteFromTree(value, thisNode)
 
 	acceptingUserInput = true
 }
@@ -66,7 +66,7 @@ const deleteFromTree = async (value, thisNode) => {
 	if (thisNode.children.length === 0) {
 		// does thisNode have sufficient keys for us to just take one out?
 		if (thisNode.values.length >= t) {
-			deleteFromNode(value, thisNode)
+			await deleteFromNode(value, thisNode)
 		} else {
 			// ohboi this might get complicated
 			// so thisNode is a leaf but we cant delete the value straight up because not enough keys inside thisNode
@@ -97,8 +97,7 @@ const deleteFromTree = async (value, thisNode) => {
 
 			// check if either of its siblings has >= t keys
 			if (y && y.values.length >= t) {
-				// TODO: r o t a t e (case 2a)
-				leftLeafRotateDeletion(
+				await leftLeafRotateDeletion(
 					value,
 					thisNode,
 					y,
@@ -106,8 +105,7 @@ const deleteFromTree = async (value, thisNode) => {
 					indexOfThisNodeInParent - 1
 				)
 			} else if (z && z.values.length >= t) {
-				// TODO: r o t a t e (case 2a)
-				rightLeafRotateDeletion(
+				await rightLeafRotateDeletion(
 					value,
 					thisNode,
 					z,
@@ -116,7 +114,13 @@ const deleteFromTree = async (value, thisNode) => {
 				)
 			} else {
 				// if not, m e r g e thisNode w/ one of the siblings
-				// TODO: merge
+				if (y) {
+					mergeLeaves(y, x, thisNode.parent, indexOfThisNodeInParent - 1)
+					deleteFromNode(value, y)
+				} else if (z) {
+					mergeLeaves(x, z, thisNode.parent, indexOfThisNodeInParent)
+					deleteFromNode(value, x)
+				}
 			}
 		}
 	}
@@ -150,7 +154,18 @@ const deleteFromTree = async (value, thisNode) => {
 	}
 }
 
-leftLeafRotateDeletion = async (k, x, y, parent, parentAdjacentKeyIndex) => {
+/** merges two leaf nodes together */
+const mergeLeaves = async (left, right, parent, parentKey) => {
+	/** expand both left and right for visualization */
+}
+
+const leftLeafRotateDeletion = async (
+	k,
+	x,
+	y,
+	parent,
+	parentAdjacentKeyIndex
+) => {
 	/** expand y for visualization */
 	y.expanded = true
 	redraw(matrix)
@@ -268,7 +283,13 @@ leftLeafRotateDeletion = async (k, x, y, parent, parentAdjacentKeyIndex) => {
 	redraw(matrix)
 }
 
-rightLeafRotateDeletion = async (k, x, z, parent, parentAdjacentKeyIndex) => {
+const rightLeafRotateDeletion = async (
+	k,
+	x,
+	z,
+	parent,
+	parentAdjacentKeyIndex
+) => {
 	/** expand z for visualization */
 	z.expanded = true
 	redraw(matrix)
@@ -285,7 +306,7 @@ rightLeafRotateDeletion = async (k, x, z, parent, parentAdjacentKeyIndex) => {
 
 	// shift the nodes up to make space for the incoming rotation
 	var shifter = index
-	for (; shifter < shifter.length - 1; shifter++) {
+	for (; shifter < x.values.length - 1; shifter++) {
 		x.values[shifter] = x.values[shifter + 1]
 	}
 
