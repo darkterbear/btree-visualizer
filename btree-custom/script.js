@@ -43,7 +43,7 @@ var matrix = []
 /**
  * Reads the json data from file input
  */
-d3.json('t3.json', data => {
+d3.json('t2.json', data => {
 	maxKeys = data.t * 2 - 1
 	t = data.t
 	// inject parent data

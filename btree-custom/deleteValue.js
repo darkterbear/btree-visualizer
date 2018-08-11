@@ -20,6 +20,7 @@ const deleteValue = async value => {
 	})
 
 	// animate the new key down to the correct leaf
+	// perform preemptive merging
 	var thisNode = root
 	while (thisNode.children.length > 0) {
 		// if this node contains the key, then stop, don't need to go to leaf
@@ -48,6 +49,8 @@ const deleteValue = async value => {
 
 		// set thisNode to child
 		thisNode = child
+
+		// see if child has enough keys; specifically, at least t keys
 
 		await sleep(speed * 2)
 	}
