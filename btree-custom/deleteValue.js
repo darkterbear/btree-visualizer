@@ -50,7 +50,24 @@ const deleteValue = async value => {
 		// set thisNode to child
 		thisNode = child
 
-		// see if child has enough keys; specifically, at least t keys
+		// see if thisNode has enough keys; specifically, at least t keys
+		if (thisNode.children.length > 0 && thisNode.values.length < t) {
+			// perform preemptive merge/rotation
+
+			// merge is actually easier than rotation, so might as well check to see if we can do merge first
+			var childIndex = getChildIndex(thisNode)
+			var y = childIndex > 0 ? thisNode.parent.children[childIndex - 1] : null
+			var z =
+				childIndex < thisNode.parent.children.length - 1
+					? thisNode.parent.children[childIndex + 1]
+					: null
+
+			if (y && y.values.length <= t) {
+			} else if (z && z.values.length <= t) {
+			} else if (y) {
+			} else {
+			}
+		}
 
 		await sleep(speed * 2)
 	}
