@@ -9,7 +9,7 @@ var t = 0
 const keySize = 48
 
 // animation speed; larger is slower
-const speed = 300
+var speed = 100
 
 window.onload = () => {
 	/**
@@ -43,7 +43,7 @@ var matrix = []
 /**
  * Reads the json data from file input
  */
-d3.json('t1.json', data => {
+d3.json('t2.1.json', data => {
 	maxKeys = data.t * 2 - 1
 	t = data.t
 	// inject parent data

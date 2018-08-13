@@ -50,7 +50,7 @@ const deleteValue = async value => {
 		// set thisNode to child
 		thisNode = child
 
-		// see if thisNode has enough keys; specifically, at least t keys
+		// see if thisNode doesnt has enough keys; specifically, at least t keys
 		if (thisNode.children.length > 0 && thisNode.values.length < t) {
 			// perform preemptive merge/rotation
 
@@ -71,9 +71,11 @@ const deleteValue = async value => {
 				await mergeNodes(thisNode, z, thisNode.parent, childIndex)
 				await recheckRoot()
 			} else if (y) {
-				// rotate from y
+				// TODO: rotate from y
+				console.log('was supposed to rotate')
 			} else {
-				// rotate from z
+				// TODO: rotate from z
+				console.log('was supposed to rotate')
 			}
 		}
 
@@ -94,7 +96,6 @@ const deleteValue = async value => {
 
 const recheckRoot = async () => {
 	var oldRoot = matrix[0][0]
-	console.log('root rechecked: ' + oldRoot.values.length)
 
 	if (oldRoot.values.length === 0) {
 		matrix.splice(0, 1)
@@ -142,8 +143,8 @@ const mergeNodes = async (left, right, parent, parentKeyIndex) => {
 		left.values.splice(left.values.length, 0, value)
 	})
 
-	// TODO: remember to change the groups of the children!
 	right.children.forEach(child => {
+		child.parent = left
 		left.children.splice(left.children.length, 0, child)
 	})
 
@@ -286,15 +287,21 @@ const deleteFromTree = async (node, keyIndex) => {
 			}
 
 			var indexOfThisNodeInParent = 0
+			console.log(node.code)
+			console.log(parent.code)
 
 			for (
 				;
 				indexOfThisNodeInParent < parent.children.length;
 				indexOfThisNodeInParent++
 			) {
+				console.log(
+					node.code + ' ' + parent.children[indexOfThisNodeInParent].code
+				)
 				if (parent.children[indexOfThisNodeInParent].code == node.code) break
 			}
 
+			console.log(indexOfThisNodeInParent)
 			// get thisNode's siblings
 			var y =
 				indexOfThisNodeInParent - 1 >= 0
@@ -305,6 +312,8 @@ const deleteFromTree = async (node, keyIndex) => {
 					? parent.children[indexOfThisNodeInParent + 1]
 					: null
 
+			console.log(y)
+			console.log(z)
 			// check if either of its siblings has >= t keys
 			if (y && y.values.length >= t) {
 				await leftLeafRotateDeletion(
@@ -349,9 +358,8 @@ const deleteFromTree = async (node, keyIndex) => {
 	else {
 		// find the 2 children next to this value
 
-		const y = keyIndex >= 0 ? node.children[keyIndex] : null
-		const z =
-			keyIndex + 1 < node.children.length ? node.children[keyIndex + 1] : null
+		const y = node.children[keyIndex]
+		const z = node.children[keyIndex + 1]
 
 		// do either of them have sufficient (>= t) keys?
 		if (y && y.values.length >= t) {
@@ -363,7 +371,13 @@ const deleteFromTree = async (node, keyIndex) => {
 		}
 		// neither of them have sufficient keys, perform merge
 		else {
-			// TODO: merge (case 3c)
+			// merge (case 3c)
+			if (y.children.length === 0) {
+				await mergeLeavesAndDelete(y, z, node, keyIndex, t - 1)
+			} else {
+				await mergeNodes(y, z, node, keyIndex)
+				await deleteFromTree(y, t - 1)
+			}
 		}
 	}
 }

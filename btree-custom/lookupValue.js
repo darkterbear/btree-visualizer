@@ -55,7 +55,6 @@ const lookupValue = async value => {
 	// thisNode is now the correct leaf node
 	// flash the correct key in the leaf
 	var keyIndex = thisNode.values.indexOf(parseInt(value))
-	console.log('index of the key to flash:' + keyIndex)
 	var rect = d3.select('[id="' + thisNode.code + '--rect:' + keyIndex + '"]')
 	for (var i = 0; i < 2; i++) {
 		rect

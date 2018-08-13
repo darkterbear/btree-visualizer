@@ -319,7 +319,6 @@ const insertValue = async value => {
 
 					redraw(matrix)
 				})
-			console.log('made it here!')
 		}
 
 		var parentGroup = thisNode.parent.group // attach the split node groups to the parent group element
@@ -528,7 +527,6 @@ const insertValue = async value => {
 			.append('svg:circle')
 			.attr('id', parentNode.code + '--circle:' + (insertIndex + 1))
 			.attr('r', keySize / 8)
-			// TODO:
 			.attr('cy', oldMatrixDepth * 128 + keySize)
 			.attr('cx', parseInt(promoteKeyRect.attr('x')) + keySize)
 			.attr('fill', 'steelblue')
