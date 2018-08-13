@@ -1,4 +1,4 @@
-const t = 3
+const t = 1
 
 var object = {}
 var x = 1

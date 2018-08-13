@@ -1,4 +1,22 @@
 const insertValue = async value => {
+	// is there anything at all?
+	if (matrix.length === 0) {
+		var data = {
+			t: t,
+			root: {
+				expanded: true,
+				values: [value],
+				children: []
+			}
+		}
+
+		injectParent(data.root)
+
+		matrix = convertToMatrix(data.root)
+
+		draw(matrix)
+	}
+
 	// check that the key doesn't already exist
 	if (keyExists(value, matrix)) return
 
@@ -223,7 +241,6 @@ const insertValue = async value => {
 			thisNode.children.length
 		)
 
-		// TODO: handle root split and promotes
 		/**
 		 * 1. matrix needs to be modified, push empty node to matrix[0]
 		 */
@@ -246,7 +263,6 @@ const insertValue = async value => {
 			matrixDepth++
 
 			thisNode.parent = parentNode
-
 			// give this new root a group
 			parentNode.group = svg.append('svg:g').attr('id', parentNode.code)
 
@@ -266,9 +282,7 @@ const insertValue = async value => {
 				.attr('id', parentNode.code + '--circle:0')
 				.attr(
 					'cx',
-					parseInt(
-						d3.select('[id="' + thisNode.code + '--circle:0').attr('cx')
-					) -
+					parseInt(d3.select('[id="' + thisNode.code + '--rect:0').attr('x')) -
 						keySize / 2 +
 						(thisNode.values.length * keySize) / 2
 				)
@@ -305,6 +319,7 @@ const insertValue = async value => {
 
 					redraw(matrix)
 				})
+			console.log('made it here!')
 		}
 
 		var parentGroup = thisNode.parent.group // attach the split node groups to the parent group element

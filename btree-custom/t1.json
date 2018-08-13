@@ -1,0 +1,25 @@
+{
+	"t": 2,
+	"root": {
+		"expanded": true,
+		"values": [4],
+		"children": [
+			{
+				"expanded": false,
+				"values": [2],
+				"children": [
+					{ "expanded": false, "values": [1], "children": [] },
+					{ "expanded": false, "values": [3], "children": [] }
+				]
+			},
+			{
+				"expanded": false,
+				"values": [6],
+				"children": [
+					{ "expanded": false, "values": [5], "children": [] },
+					{ "expanded": false, "values": [7], "children": [] }
+				]
+			}
+		]
+	}
+}

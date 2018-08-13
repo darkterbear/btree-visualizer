@@ -62,10 +62,18 @@ const deleteValue = async value => {
 					? thisNode.parent.children[childIndex + 1]
 					: null
 
-			if (y && y.values.length <= t) {
-			} else if (z && z.values.length <= t) {
+			if (y && y.values.length < t) {
+				// merge thisnode w/ y and key from parent (y, parentKey, thisNode)
+				await mergeNodes(y, thisNode, thisNode.parent, childIndex - 1)
+				await recheckRoot()
+			} else if (z && z.values.length < t) {
+				// merge thisnode w/ z and key from parent (thisNode, parentKey, z)
+				await mergeNodes(thisNode, z, thisNode.parent, childIndex)
+				await recheckRoot()
 			} else if (y) {
+				// rotate from y
 			} else {
+				// rotate from z
 			}
 		}
 
@@ -84,6 +92,168 @@ const deleteValue = async value => {
 	acceptingUserInput = true
 }
 
+const recheckRoot = async () => {
+	var oldRoot = matrix[0][0]
+	console.log('root rechecked: ' + oldRoot.values.length)
+
+	if (oldRoot.values.length === 0) {
+		matrix.splice(0, 1)
+		matrix[0][0].parent = null
+
+		// move new root group out of old root group
+		var newRoot = matrix[0][0]
+		svg.append(() => newRoot.group.remove().node())
+		oldRoot.group
+			.transition()
+			.style('opacity', 0)
+			.duration(speed)
+
+		var path = d3.select('[id="' + newRoot.code + '--path"]')
+		path
+			.transition()
+			.style('opacity', 0)
+			.duration(speed)
+
+		redraw(matrix)
+		await sleep(speed)
+
+		path.remove()
+	}
+}
+
+const mergeNodes = async (left, right, parent, parentKeyIndex) => {
+	// expand left and right for visualization
+	left.expanded = true
+	right.expanded = true
+	redraw(matrix)
+
+	await sleep(speed)
+
+	/** make changes to the matrix */
+	// splice parentKey into left
+	left.values.splice(
+		left.values.length,
+		0,
+		parent.values.splice(parentKeyIndex, 1)[0]
+	)
+
+	// shove keys from right to left
+	right.values.forEach(value => {
+		left.values.splice(left.values.length, 0, value)
+	})
+
+	// TODO: remember to change the groups of the children!
+	right.children.forEach(child => {
+		left.children.splice(left.children.length, 0, child)
+	})
+
+	// splice `right` from parent's children
+	parent.children.splice(parentKeyIndex + 1, 1)
+
+	// pull `right` out of the matrix
+	deleteFromMatrix(right.code)
+
+	/** modify id's in prep for redraw */
+	var parentKeyRect = d3.select(
+		'[id="' + parent.code + '--rect:' + parentKeyIndex + '"]'
+	)
+
+	var parentKeyText = d3.select(
+		'[id="' + parent.code + '--text:' + parentKeyIndex + '"]'
+	)
+
+	parentKeyRect.attr('id', left.code + '--rect:' + (t - 1))
+	parentKeyText.attr('id', left.code + '--text:' + (t - 1))
+
+	var parentKeyRectNode = parentKeyRect.remove().node()
+	var parentKeyTextNode = parentKeyText.remove().node()
+
+	left.group.append(() => {
+		return parentKeyRectNode
+	})
+	left.group.append(() => {
+		return parentKeyTextNode
+	})
+
+	// tag the circle to remove
+	var removeCircle = d3.select(
+		'[id="' + parent.code + '--circle:' + (parentKeyIndex + 1)
+	)
+	removeCircle.attr('id', 'removeCircle') // prevent id confusion when shifting other circles down
+
+	// shift the parent's keys and circles down to fill the void
+	// we have to go all the way up to the values array's length since we spliced a value earlier
+	for (
+		var shifter = parentKeyIndex + 1;
+		shifter <= parent.values.length;
+		shifter++
+	) {
+		d3.select('[id="' + parent.code + '--rect:' + shifter + '"]').attr(
+			'id',
+			parent.code + '--rect:' + (shifter - 1)
+		)
+		d3.select('[id="' + parent.code + '--text:' + shifter + '"]').attr(
+			'id',
+			parent.code + '--text:' + (shifter - 1)
+		)
+
+		d3.select('[id="' + parent.code + '--circle:' + (shifter + 1) + '"]').attr(
+			'id',
+			parent.code + '--circle:' + shifter
+		)
+	}
+
+	// change the right leaf's key ids
+	for (var i = 0; i < t - 1; i++) {
+		var rightRect = d3.select('[id="' + right.code + '--rect:' + i + '"]')
+		var rightText = d3.select('[id="' + right.code + '--text:' + i + '"]')
+		rightRect.attr('id', left.code + '--rect:' + (t + i))
+		rightText.attr('id', left.code + '--text:' + (t + i))
+
+		var rightRectNode = rightRect.remove().node()
+		var rightTextNode = rightText.remove().node()
+
+		left.group.append(() => {
+			return rightRectNode
+		})
+		left.group.append(() => {
+			return rightTextNode
+		})
+
+		// move the right children groups
+		for (var i = 0; i < t; i++) {
+			var rightCircle = d3.select('[id="' + right.code + '--circle:' + i + '"]')
+			var rightChildGroup = right.children[i].group
+			rightCircle.attr('id', left.code + '--circle:' + (t + i))
+
+			var rightCircleNode = rightCircle.remove().node()
+			var rightChildGroupNode = rightChildGroup.remove().node()
+
+			left.group.append(() => rightCircleNode)
+			left.group.append(() => rightChildGroupNode)
+		}
+
+		/** redraw */
+		// make the parent circle disappear
+		removeCircle
+			.transition()
+			.style('opacity', 0)
+			.duration(speed)
+
+		right.group
+			.transition()
+			.style('opacity', 0)
+			.duration(speed)
+
+		redraw(matrix)
+
+		await sleep(speed)
+
+		removeCircle.remove()
+		right.group.remove()
+	}
+}
+
 const deleteFromTree = async (node, keyIndex) => {
 	// start going through the cases (ohboi)
 
@@ -98,6 +268,22 @@ const deleteFromTree = async (node, keyIndex) => {
 
 			// find the index of thisNode in the children of its parent
 			var parent = node.parent
+			if (!parent) {
+				// this leaf is actually root, just delete lol
+				await deleteFromNode(node, keyIndex)
+
+				if (node.values.length === 0) {
+					// welp no more values
+					matrix = []
+					svg.remove()
+					svg = d3
+						.select('body')
+						.append('svg:svg')
+						.attr('width', wW)
+						.attr('height', wH - 120)
+				}
+				return
+			}
 
 			var indexOfThisNodeInParent = 0
 
@@ -139,7 +325,7 @@ const deleteFromTree = async (node, keyIndex) => {
 			} else {
 				// if not, m e r g e thisNode w/ one of the siblings
 				if (y) {
-					mergeLeavesAndDelete(
+					await mergeLeavesAndDelete(
 						y,
 						node,
 						node.parent,
@@ -147,7 +333,7 @@ const deleteFromTree = async (node, keyIndex) => {
 						keyIndex
 					)
 				} else if (z) {
-					mergeLeavesAndDelete(
+					await mergeLeavesAndDelete(
 						node,
 						z,
 						node.parent,
@@ -155,6 +341,7 @@ const deleteFromTree = async (node, keyIndex) => {
 						keyIndex
 					)
 				}
+				await recheckRoot()
 			}
 		}
 	}
@@ -256,7 +443,6 @@ const mergeLeavesAndDelete = async (
 	/** make changes to the matrix */
 
 	// to smush them two together, first splice parentkey into left
-	// TODO: use recursive upwards propogating deletion
 	left.values.splice(
 		left.values.length,
 		0,
