@@ -533,6 +533,7 @@ const deleteFromTree = async (node, keyIndex) => {
 	}
 }
 
+// TODO: fix this, supposed to find the rightmost/leftmost in subtree
 const recursiveDelete = async (node, child, index, isOnRight) => {
 	/** expand the left child */
 	child.expanded = true
@@ -541,6 +542,8 @@ const recursiveDelete = async (node, child, index, isOnRight) => {
 	await sleep(speed)
 
 	var childPromoteIndex = isOnRight ? 0 : child.values.length - 1
+
+	// TODO: expand all the way down
 
 	/** modify the matrix */
 	// set leftmost key in node to rightmost key in child
