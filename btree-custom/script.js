@@ -9,7 +9,7 @@ var t = 0
 const keySize = 48
 
 // animation speed; larger is slower
-var speed = 100
+var speed = 300
 
 window.onload = () => {
 	/**

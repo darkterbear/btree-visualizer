@@ -71,11 +71,11 @@ const deleteValue = async value => {
 				await mergeNodes(thisNode, z, thisNode.parent, childIndex)
 				await recheckRoot()
 			} else if (y) {
-				// TODO: rotate from y
-				console.log('was supposed to rotate')
+				// rotate from y
+				await internalRotateRight(thisNode, y, thisNode.parent, childIndex - 1)
 			} else {
-				// TODO: rotate from z
-				console.log('was supposed to rotate')
+				// rotate from z
+				await internalRotateLeft(thisNode, z, thisNode.parent, childIndex)
 			}
 		}
 
@@ -92,6 +92,165 @@ const deleteValue = async value => {
 	await deleteFromTree(thisNode, index)
 
 	acceptingUserInput = true
+}
+
+const internalRotateLeft = async (thisNode, z, parent, parentKeyIndex) => {
+	thisNode.expanded = true
+	z.expanded = true
+	redraw(matrix)
+
+	await sleep(speed)
+	/** modify matrix */
+	// append parent key to thisNode keys
+	thisNode.values.push(parent.values[parentKeyIndex])
+
+	// set parent key to z firstkey
+	parent.values[parentKeyIndex] = z.values.splice(0, 1)[0]
+
+	// move the first child of z to last of thisNode
+	thisNode.children.push(z.children.splice(0, 1)[0])
+
+	/** modify id's */
+	// change ids of rotated keys
+	var rotateDownText = changeID(
+		parent.code,
+		'text',
+		parentKeyIndex,
+		thisNode.code,
+		thisNode.values.length - 1
+	)
+	var rotateDownRect = changeID(
+		parent.code,
+		'rect',
+		parentKeyIndex,
+		thisNode.code,
+		thisNode.values.length - 1
+	)
+
+	console.log(rotateDownRect)
+
+	var rotateUpText = changeID(z.code, 'text', 0, parent.code, parentKeyIndex)
+	var rotateUpRect = changeID(z.code, 'rect', 0, parent.code, parentKeyIndex)
+
+	// shift keys down
+	for (var i = 1; i <= z.values.length; i++) {
+		console.log('change ' + i + ' to ' + (i - 1))
+		changeID(z.code, 'text', i, z.code, i - 1)
+		changeID(z.code, 'rect', i, z.code, i - 1)
+	}
+
+	// move the rotated keys between groups
+	thisNode.group.append(() => rotateDownRect.remove().node())
+	thisNode.group.append(() => rotateDownText.remove().node())
+
+	parent.group.append(() => rotateUpRect.remove().node())
+	parent.group.append(() => rotateUpText.remove().node())
+
+	// move circle from z to thisNode (change id and move group)
+	var circle = d3
+		.select('[id="' + z.code + '--circle:0"]')
+		.attr('id', thisNode.code + '--circle:' + (thisNode.children.length - 1))
+
+	thisNode.group.append(() => circle.remove().node())
+
+	// shift old circles down
+	for (var i = 1; i <= z.children.length; i++) {
+		d3.select('[id="' + z.code + '--circle:' + i).attr(
+			'id',
+			z.code + '--circle:' + (i - 1)
+		)
+	}
+
+	// move the child between groups
+	thisNode.group.append(() => {
+		return thisNode.children[thisNode.children.length - 1].group.remove().node()
+	})
+
+	/** redraw */
+
+	redraw(matrix)
+}
+
+const internalRotateRight = async (thisNode, y, parent, parentKeyIndex) => {
+	thisNode.expanded = true
+	y.expanded = true
+	redraw(matrix)
+
+	await sleep(speed)
+	/** modify matrix */
+	// append parent key to thisNode keys
+	thisNode.values.splice(0, 0, parent.values[parentKeyIndex])
+
+	// set parent key to y lastkey
+	parent.values[parentKeyIndex] = y.values.splice(y.values.length - 1, 1)[0]
+
+	// move the last child of y to first of thisNode
+	thisNode.children.splice(0, 0, y.children.splice(y.children.length - 1, 1)[0])
+
+	/** modify id's */
+	// shift keys up in thisNode
+	for (var i = thisNode.values.length - 1; i >= 0; i--) {
+		changeID(thisNode.code, 'text', i, thisNode.code, i + 1)
+		changeID(thisNode.code, 'rect', i, thisNode.code, i + 1)
+	}
+
+	// change ids of rotated keys
+	var rotateDownText = changeID(
+		parent.code,
+		'text',
+		parentKeyIndex,
+		thisNode.code,
+		0
+	)
+	var rotateDownRect = changeID(
+		parent.code,
+		'rect',
+		parentKeyIndex,
+		thisNode.code,
+		0
+	)
+
+	var rotateUpText = changeID(
+		y.code,
+		'text',
+		y.values.length,
+		parent.code,
+		parentKeyIndex
+	)
+	var rotateUpRect = changeID(
+		y.code,
+		'rect',
+		y.values.length,
+		parent.code,
+		parentKeyIndex
+	)
+
+	console.log(rotateDownRect)
+	// move the rotated keys between groups
+	thisNode.group.append(() => rotateDownRect.remove().node())
+	thisNode.group.append(() => rotateDownText.remove().node())
+
+	parent.group.append(() => rotateUpRect.remove().node())
+	parent.group.append(() => rotateUpText.remove().node())
+
+	// shift old circles up
+	for (var i = thisNode.children.length - 1; i >= 0; i--) {
+		changeID(thisNode.code, 'circle', i, thisNode.code, i + 1)
+	}
+
+	// move circle from y to thisNode (change id and move group)
+	var circle = changeID(y.code, 'circle', y.children.length, thisNode.code, 0)
+
+	thisNode.group.append(() => circle.remove().node())
+
+	// move the child between groups
+	thisNode.group.append(() => {
+		return thisNode.children[0].group.remove().node()
+	})
+
+	/** redraw */
+
+	redraw(matrix)
 }
 
 const recheckRoot = async () => {
@@ -287,21 +446,15 @@ const deleteFromTree = async (node, keyIndex) => {
 			}
 
 			var indexOfThisNodeInParent = 0
-			console.log(node.code)
-			console.log(parent.code)
 
 			for (
 				;
 				indexOfThisNodeInParent < parent.children.length;
 				indexOfThisNodeInParent++
 			) {
-				console.log(
-					node.code + ' ' + parent.children[indexOfThisNodeInParent].code
-				)
 				if (parent.children[indexOfThisNodeInParent].code == node.code) break
 			}
 
-			console.log(indexOfThisNodeInParent)
 			// get thisNode's siblings
 			var y =
 				indexOfThisNodeInParent - 1 >= 0
@@ -312,8 +465,6 @@ const deleteFromTree = async (node, keyIndex) => {
 					? parent.children[indexOfThisNodeInParent + 1]
 					: null
 
-			console.log(y)
-			console.log(z)
 			// check if either of its siblings has >= t keys
 			if (y && y.values.length >= t) {
 				await leftLeafRotateDeletion(

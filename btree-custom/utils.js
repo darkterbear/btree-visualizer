@@ -120,3 +120,22 @@ const deleteFromMatrix = code => {
 const sleep = ms => {
 	return new Promise(resolve => setTimeout(resolve, ms))
 }
+
+const changeID = (nodeCode, type, index, newNodeCode, newIndex) => {
+	if (index === null || index === undefined) {
+		return d3
+			.select('[id="' + nodeCode + '--' + type + '"]')
+			.attr('id', (newNodeCode || nodeCode) + '--' + type)
+	} else {
+		return d3
+			.select('[id="' + nodeCode + '--' + type + ':' + index + '"]')
+			.attr(
+				'id',
+				(newNodeCode || nodeCode) +
+					'--' +
+					type +
+					':' +
+					((newIndex === null || newIndex) === undefined ? index : newIndex)
+			)
+	}
+}
