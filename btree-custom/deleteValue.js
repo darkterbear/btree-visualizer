@@ -533,7 +533,6 @@ const deleteFromTree = async (node, keyIndex) => {
 	}
 }
 
-// TODO: fix this, supposed to find the rightmost/leftmost in subtree
 const recursiveDelete = async (node, child, index, isOnRight) => {
 	/** expand the left child */
 	child.expanded = true
@@ -541,12 +540,40 @@ const recursiveDelete = async (node, child, index, isOnRight) => {
 
 	await sleep(speed)
 
+	if (isOnRight) {
+		while (child.children.length > 0) {
+			child = child.children[0]
+
+			child.expanded = true
+			d3.select('[id="' + child.code + '"]')
+				.transition()
+				.style('opacity', 1)
+				.duration(speed)
+
+			redraw(matrix)
+
+			await sleep(speed * 2)
+		}
+	} else {
+		while (child.children.length > 0) {
+			child = child.children[child.children.length - 1]
+
+			child.expanded = true
+			d3.select('[id="' + child.code + '"]')
+				.transition()
+				.style('opacity', 1)
+				.duration(speed)
+
+			redraw(matrix)
+
+			await sleep(speed * 2)
+		}
+	}
+
 	var childPromoteIndex = isOnRight ? 0 : child.values.length - 1
 
-	// TODO: expand all the way down
-
 	/** modify the matrix */
-	// set leftmost key in node to rightmost key in child
+	// set the deleted key in the node to the extreme key of the y/z subtree
 	node.values[index] = child.values[childPromoteIndex]
 
 	/** change ids, move groups, etc. */
