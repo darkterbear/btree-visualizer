@@ -109,6 +109,7 @@ const internalRotateLeft = async (thisNode, z, parent, parentKeyIndex) => {
 
 	// move the first child of z to last of thisNode
 	thisNode.children.push(z.children.splice(0, 1)[0])
+	thisNode.children[thisNode.children.length - 1].parent = thisNode
 
 	/** modify id's */
 	// change ids of rotated keys
@@ -186,6 +187,7 @@ const internalRotateRight = async (thisNode, y, parent, parentKeyIndex) => {
 
 	// move the last child of y to first of thisNode
 	thisNode.children.splice(0, 0, y.children.splice(y.children.length - 1, 1)[0])
+	thisNode.children[0].parent = thisNode
 
 	/** modify id's */
 	// shift keys up in thisNode
